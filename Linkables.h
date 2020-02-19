@@ -47,10 +47,10 @@ struct LinkableControlTable
 
   void paintTable(Graphics& g, int width, int height, bool hasLinked)
   {
-    int rowHeight = hasLinked ? (height - 2) / 4.f : (height - 2) / 3.f;
+    int rowHeight = hasLinked ? height / 4.f : height / 3.f;
 
     g.fillAll(backgroundColour);
-    
+
     g.setColour(lineColour);
 
     if (drawHorizontalLines) {
@@ -162,11 +162,9 @@ public:
     }
 
     if (linked) {
-      int const linkedGap = 3;
-      int linkedSide = rowHeight - linkedGap;
       linked->getControl().setTopLeftPosition(
-        0 + jmax(0.f, 0.5f * (getWidth() - linkedSide)), y + linkedGap);
-      linked->getControl().setSize(linkedSide, linkedSide);
+        0 + jmax(0.f, 0.5f * (getWidth() - rowHeight)), y);
+      linked->getControl().setSize(rowHeight, rowHeight);
     }
   }
 
