@@ -200,7 +200,11 @@ public:
 
   void resized() override;
 
+  void paint(Graphics& g) override;
+
   void setSelectedNode(int newNodeIndex);
+
+  void setTableSettings(LinkableControlTable tableSettings);
 
 private:
   void setNode(int newNodeIndex);
@@ -227,6 +231,8 @@ private:
   std::unique_ptr<LinkableControl<AttachedSlider>> y;
   std::unique_ptr<LinkableControl<AttachedSlider>> t;
   std::unique_ptr<LinkableControl<AttachedSlider>> s;
+
+  LinkableControlTable tableSettings;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SplineNodeEditor)
 };

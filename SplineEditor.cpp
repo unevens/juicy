@@ -627,6 +627,8 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
     }
   };
 
+  label.setFont(label.getFont().boldened());
+
   setSize(360, 120);
 
   setNode(0);
@@ -637,18 +639,18 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
 void
 SplineNodeEditor::resized()
 {
-  constexpr float rowHeight = 30.f;
-
+  int const rowHeight = getHeight() / 4;
   label.setTopLeftPosition(0, 0);
-  label.setSize(100, rowHeight);
-  selectedNode.setTopLeftPosition(100, 0);
-  selectedNode.setSize(60, rowHeight);
+  label.setSize(120, rowHeight);
+  selectedNode.setTopLeftPosition(120, rowHeight * 0.1);
+  selectedNode.setSize(60, rowHeight * 0.8);
+  int const halfRemainder = (getWidth() - 180) / 2;
   enabled.getControl().setTopLeftPosition(200, 0);
-  enabled.getControl().setSize(120, rowHeight);
-  linked.getControl().setTopLeftPosition(320, 0);
-  linked.getControl().setSize(120, rowHeight);
+  enabled.getControl().setSize(halfRemainder, rowHeight);
+  linked.getControl().setTopLeftPosition(180 + halfRemainder, 0);
+  linked.getControl().setSize(halfRemainder, rowHeight);
 
-  int const secondRow = rowHeight + 3;
+  int const secondRow = rowHeight;
   int left = 0.f;
 
   auto const resize = [&](auto& component, int width) {
@@ -657,13 +659,13 @@ SplineNodeEditor::resized()
     left += width;
   };
 
-  resize(channelLabels, 50);
+  resize(channelLabels, 40);
 
   if (!x || !y || !s || !t) {
     return;
   }
 
-  int width = std::floor(((float)getWidth() - 50.f) / 4.f);
+  int width = std::floor(((float)getWidth() - 40.f) / 4.f);
 
   resize(*x, width);
   resize(*y, width);
@@ -672,10 +674,33 @@ SplineNodeEditor::resized()
 }
 
 void
+SplineNodeEditor::paint(Graphics& g)
+{
+  int const width = 40 + 4 * std::floor(((float)getWidth() - 40.f) / 4.f);
+  g.fillAll(tableSettings.backgroundColour);
+  g.setColour(tableSettings.lineColour);
+  g.drawLine(1, 1, width - 1, 1);
+  g.drawLine(1, 1, 1, width / 4);
+  g.drawLine(width - 1, 1, width - 1, getHeight() / 4);
+}
+
+void
 SplineNodeEditor::setSelectedNode(int newNodeIndex)
 {
   setNode(newNodeIndex);
   selectedNode.setSelectedId(newNodeIndex + 1, sendNotification);
+}
+
+void
+SplineNodeEditor::setTableSettings(LinkableControlTable tableSettings)
+{
+  this->tableSettings = tableSettings;
+  channelLabels.tableSettings = tableSettings;
+  tableSettings.drawLeftVericalLine = false;
+  x->tableSettings = tableSettings;
+  y->tableSettings = tableSettings;
+  t->tableSettings = tableSettings;
+  s->tableSettings = tableSettings;
 }
 
 void
@@ -760,6 +785,8 @@ SplineNodeEditor::setNode(int newNodeIndex)
   addAndMakeVisible(*s);
 
   s->tableSettings.drawLeftVericalLine = false;
+
+  setTableSettings(tableSettings);
 
   resized();
 }
