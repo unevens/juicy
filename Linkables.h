@@ -47,20 +47,20 @@ struct LinkableControlTable
 
   void paintTable(Graphics& g, int width, int height, bool hasLinked)
   {
-    int rowHeight = hasLinked ? height / 4.f : height / 3.f;
+    int const rowHeight = hasLinked ? height / 4.f : height / 3.f;
 
     g.fillAll(backgroundColour);
 
     g.setColour(lineColour);
 
     if (drawHorizontalLines) {
-      g.drawLine(0.f, 1.f, width, 1.f, lineThickness);
-      g.drawLine(0.f, rowHeight, width, rowHeight, lineThickness);
-      g.drawLine(0.f, 2 * rowHeight, width, 2 * rowHeight, lineThickness);
+      g.drawLine(0, 1, width, 1, lineThickness);
+      g.drawLine(0, rowHeight, width, rowHeight, lineThickness);
+      g.drawLine(0, 2 * rowHeight, width, 2 * rowHeight, lineThickness);
       if (hasLinked) {
-        g.drawLine(0.f, 3 * rowHeight, width, 3 * rowHeight, lineThickness);
+        g.drawLine(0, 3 * rowHeight, width, 3 * rowHeight, lineThickness);
       }
-      g.drawLine(0.f, height - 1, width, height - 1, lineThickness);
+      g.drawLine(0, height - 1, width, height - 1, lineThickness);
     }
 
     if (drawLeftVericalLine) {
@@ -178,30 +178,6 @@ public:
     }
 
     grid.performLayout(getLocalBounds());
-
-    /*int rowHeight = linked ? (getHeight()) / 4.f : (getHeight()) / 3.f;
-
-    label.setTopLeftPosition(0, 0);
-    label.setSize(getWidth(), rowHeight);
-
-    int y = rowHeight;
-
-    for (int i = 0; i < 2; ++i) {
-      constexpr int controlGap = std::is_same_v<Control, Slider> ? 0 : 4;
-      int const controlHeight = rowHeight - 2 * controlGap;
-
-      controls[i].getControl().setTopLeftPosition(tableSettings.gap,
-                                                  y + controlGap);
-      controls[i].getControl().setSize(getWidth() - 2.f * tableSettings.gap,
-                                       controlHeight);
-      y += rowHeight;
-    }
-
-    if (linked) {
-      linked->getControl().setTopLeftPosition(
-        jmax(0.f, 8 + 0.5f * (getWidth() - rowHeight)), y);
-      linked->getControl().setSize(rowHeight, rowHeight);
-    }*/
   }
 
   void paint(Graphics& g) override
