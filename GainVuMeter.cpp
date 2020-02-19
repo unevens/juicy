@@ -86,7 +86,6 @@ GainVuMeter::paint(Graphics& g)
     }
 
     g.setColour(Colours::white);
-    g.drawLine(left, halfHeight, left + dx, halfHeight, 1.f);
 
     if (db >= 0.1f) {
       g.drawText(String(db, 1),
@@ -100,18 +99,28 @@ GainVuMeter::paint(Graphics& g)
     }
   }
 
+  g.setColour(Colours::white);
+  g.drawLine(0.f, halfHeight, getWidth(), halfHeight, 1.f);
+
   std::function<void(int)> const drawReferenceLine = [&](int db) {
     if (abs(db) > range) {
       return;
     }
-    float const y =
-      halfHeight -
-      std::copysign(scaling(abs(db / range)), db / range) * halfHeight;
+
+    int const y = jlimit(
+      1,
+      getHeight() - 1,
+      (int)(halfHeight -
+            std::copysign(scaling(abs(db / range)), db / range) * halfHeight));
+
     g.drawLine(dx, y, 2.f * dx, y);
+
     int const textHeight = y + (db > 0.f ? 0 : -16);
+
     g.drawText((db > 0 ? "+" : "-") + String(abs(db)),
                Rectangle((int)dx, textHeight, (int)dx, 16),
                Justification::centred);
+
     if (db > 0) {
       drawReferenceLine(-db);
     }
