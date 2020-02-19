@@ -226,7 +226,9 @@ SplineEditor::paint(Graphics& g)
     String const text = "x=" + String(x, 2) + ", y=" + String(y, 2);
 
     g.setColour(mousePositionColour);
-    g.drawText(text, Rectangle{ 0, 0, getWidth(), 50 }, Justification::left);
+    g.drawText(text,
+               Rectangle{ 0, getHeight() - 25, getWidth() - 10, 20 },
+               Justification::right);
   }
 }
 
