@@ -35,22 +35,63 @@ struct LinkableParameter
   }
 };
 
+struct LinkableControlTable
+{
+  Colour backgroundColour = Colours::transparentBlack;
+  Colour lineColour = Colours::white;
+  bool drawHorizontalLines = true;
+  bool drawLeftVericalLine = true;
+  bool drawRightVericalLine = true;
+  float lineThickness = 1.f;
+  float gap = 8.f;
+
+  void paintTable(Graphics& g, int width, int height, bool hasLinked)
+  {
+    int rowHeight = hasLinked ? (height - 2) / 4.f : (height - 2) / 3.f;
+
+    g.fillAll(backgroundColour);
+    
+    g.setColour(lineColour);
+
+    if (drawHorizontalLines) {
+      g.drawLine(0.f, 1.f, width, 1.f, lineThickness);
+      g.drawLine(0.f, rowHeight, width, rowHeight, lineThickness);
+      g.drawLine(0.f, 2 * rowHeight, width, 2 * rowHeight, lineThickness);
+      if (hasLinked) {
+        g.drawLine(0.f, 3 * rowHeight, width, 3 * rowHeight, lineThickness);
+      }
+      g.drawLine(0.f, height - 1, width, height - 1, lineThickness);
+    }
+
+    if (drawLeftVericalLine) {
+      g.drawLine(1, 0, 1, height, lineThickness);
+    }
+
+    if (drawRightVericalLine) {
+      g.drawLine(width - 1, 0, width - 1, height, lineThickness);
+    }
+  }
+};
+
 template<class AttachedControlClass>
-class LinkableControl : public AudioProcessorValueTreeState::Listener
+class LinkableControl
+  : public Component
+  , public AudioProcessorValueTreeState::Listener
 {
 protected:
   std::unique_ptr<AttachedToggle> linked;
   std::array<AttachedControlClass, 2> controls;
-  std::unique_ptr<Label> label;
+  Label label;
   std::array<String, 2> paramIDs;
   String linkParamID;
   AudioProcessorValueTreeState* apvts;
 
 public:
+  LinkableControlTable tableSettings;
+
   using Control = typename AttachedControlClass::Control;
 
-  LinkableControl(Component& owner,
-                  AudioProcessorValueTreeState& apvts,
+  LinkableControl(AudioProcessorValueTreeState& apvts,
                   String const& name,
                   String const& linkParamID,
                   String const& channel0ParamID,
@@ -59,25 +100,26 @@ public:
     : paramIDs{ { channel0ParamID, channel1ParamID } }
     , linkParamID(linkParamID)
     , apvts(&apvts)
-    , label(std::make_unique<Label>("", name))
+    , label("", name)
     , linked(makeLinkedControl
-               ? std::make_unique<AttachedToggle>(owner, apvts, linkParamID)
+               ? std::make_unique<AttachedToggle>(*this, apvts, linkParamID)
                : nullptr)
-    , controls{ { { owner, apvts, channel0ParamID },
-                  { owner, apvts, channel0ParamID } } }
+    , controls{ { { *this, apvts, channel0ParamID },
+                  { *this, apvts, channel0ParamID } } }
   {
-    owner.addAndMakeVisible(*label);
+    addAndMakeVisible(label);
     parameterChanged("", apvts.getParameter(linkParamID)->getValue());
     apvts.addParameterListener(linkParamID, this);
+    label.setJustificationType(Justification::centred);
+    setOpaque(false);
+    setSize(90, linked ? 120 : 90);
   }
 
   template<class ParameterClass>
-  LinkableControl(Component& owner,
-                  AudioProcessorValueTreeState& apvts,
+  LinkableControl(AudioProcessorValueTreeState& apvts,
                   String const& name,
                   LinkableParameter<ParameterClass>& linkableParameters)
-    : LinkableControl(owner,
-                      apvts,
+    : LinkableControl(apvts,
                       name,
                       linkableParameters.linked.getID(),
                       linkableParameters.parameters[0]->paramID,
@@ -95,43 +137,56 @@ public:
 
   ToggleButton* getLinked() { return linked ? &linked->getControl() : nullptr; }
 
-  Label& getLabel() { return *label; }
+  Label& getLabel() { return label; }
 
   Control& getControl(int channel) { return controls[channel].getControl(); }
 
-  void resize(Point<float> topLeft, float width, float rowHeight, float rowGap)
+  void resized() override
   {
-    label->setTopLeftPosition(topLeft.x, topLeft.y);
-    label->setSize(width, rowHeight);
-    topLeft.y += rowHeight + rowGap;
+    int rowHeight = linked ? (getHeight()) / 4.f : (getHeight()) / 3.f;
+
+    label.setTopLeftPosition(0, 0);
+    label.setSize(getWidth(), rowHeight);
+
+    int y = rowHeight;
+
     for (int i = 0; i < 2; ++i) {
-      controls[i].getControl().setTopLeftPosition(topLeft.x, topLeft.y);
-      controls[i].getControl().setSize(width, rowHeight);
-      topLeft.y += rowHeight + rowGap;
+      constexpr int controlGap = std::is_same_v<Control, Slider> ? 0 : 4;
+      int const controlHeight = rowHeight - 2 * controlGap;
+
+      controls[i].getControl().setTopLeftPosition(tableSettings.gap,
+                                                  y + controlGap);
+      controls[i].getControl().setSize(getWidth() - 2.f * tableSettings.gap,
+                                       controlHeight);
+      y += rowHeight;
     }
+
     if (linked) {
-      linked->getControl().setTopLeftPosition(topLeft.x, topLeft.y);
-      linked->getControl().setSize(width, rowHeight);
+      int const linkedGap = 3;
+      int linkedSide = rowHeight - linkedGap;
+      linked->getControl().setTopLeftPosition(
+        0 + jmax(0.f, 0.5f * (getWidth() - linkedSide)), y + linkedGap);
+      linked->getControl().setSize(linkedSide, linkedSide);
     }
   }
 
-  LinkableControl(LinkableControl&&) = default;
-  LinkableControl& operator=(LinkableControl&&) = default;
+  void paint(Graphics& g) override
+  {
+    tableSettings.paintTable(g, getWidth(), getHeight(), linked ? true : false);
+  }
 };
 
 class LinkableComboBox : public LinkableControl<AttachedComboBox>
 {
 public:
-  LinkableComboBox(Component& owner,
-                   AudioProcessorValueTreeState& apvts,
+  LinkableComboBox(AudioProcessorValueTreeState& apvts,
                    String const& name,
                    StringArray const& choices,
                    String const& linkParamID,
                    String const& channel0ParamID,
                    String const& channel1ParamID,
                    bool makeLinkedControl = true)
-    : LinkableControl<AttachedComboBox>(owner,
-                                        apvts,
+    : LinkableControl<AttachedComboBox>(apvts,
                                         name,
                                         linkParamID,
                                         "",
@@ -139,19 +194,17 @@ public:
                                         makeLinkedControl)
   {
     this->controls[0] =
-      AttachedComboBox(owner, apvts, channel0ParamID, choices);
+      AttachedComboBox(*this, apvts, channel0ParamID, choices);
     this->controls[1] =
-      AttachedComboBox(owner, apvts, channel1ParamID, choices);
+      AttachedComboBox(*this, apvts, channel1ParamID, choices);
   }
 
   template<class ParameterClass>
-  LinkableComboBox(Component& owner,
-                   AudioProcessorValueTreeState& apvts,
+  LinkableComboBox(AudioProcessorValueTreeState& apvts,
                    String const& name,
                    StringArray const& choices,
                    LinkableParameter<ParameterClass>& linkableParameters)
-    : LinkableComboBox(owner,
-                       apvts,
+    : LinkableComboBox(apvts,
                        name,
                        choices,
                        linkableParameters.linked.getID(),
@@ -161,74 +214,68 @@ public:
   {}
 };
 
-class ChannelLabels final : public AudioProcessorValueTreeState::Listener
+class ChannelLabels
+  : public Component
+  , public AudioProcessorValueTreeState::Listener
 {
-  std::array<std::unique_ptr<Label>, 2> labels;
+  std::array<Label, 2> labels;
   std::unique_ptr<Label> linkLabel;
   String midSideParamID;
   AudioProcessorValueTreeState* apvts;
-  Component* owner;
 
 public:
-  ChannelLabels(Component& owner,
-                AudioProcessorValueTreeState& apvts,
+  LinkableControlTable tableSettings;
+
+  ChannelLabels(AudioProcessorValueTreeState& apvts,
                 String const& midSideParamID,
                 bool makeLinkLabel = true)
     : midSideParamID(midSideParamID)
     , apvts(&apvts)
-    , owner(&owner)
-    , labels{ { std::make_unique<Label>("", "Left"),
-                std::make_unique<Label>("", "Right") } }
+    , labels{ { Label("", "Left"), Label("", "Right") } }
     , linkLabel(makeLinkLabel ? std::make_unique<Label>("", "Link") : nullptr)
   {
     parameterChanged("", apvts.getParameter(midSideParamID)->getValue());
     apvts.addParameterListener(midSideParamID, this);
-    owner.addAndMakeVisible(*labels[0]);
-    owner.addAndMakeVisible(*labels[1]);
+    addAndMakeVisible(labels[0]);
+    addAndMakeVisible(labels[1]);
     if (linkLabel) {
-      owner.addAndMakeVisible(*linkLabel);
+      addAndMakeVisible(*linkLabel);
     }
   }
 
-  ~ChannelLabels()
-  {
-    apvts->removeParameterListener(midSideParamID, this);
-    owner->removeChildComponent(labels[0].get());
-    owner->removeChildComponent(labels[1].get());
-    if (linkLabel) {
-      owner->removeChildComponent(linkLabel.get());
-    }
-  }
+  ~ChannelLabels() { apvts->removeParameterListener(midSideParamID, this); }
 
   void parameterChanged(const String&, float newValue) override
   {
     bool const isMidSide = newValue >= 0.5f;
-    labels[0]->setText(isMidSide ? "Mid" : "Left", dontSendNotification);
-    labels[1]->setText(isMidSide ? "Side" : "Right", dontSendNotification);
+    labels[0].setText(isMidSide ? "Mid" : "Left", dontSendNotification);
+    labels[1].setText(isMidSide ? "Side" : "Right", dontSendNotification);
   }
 
-  Label& getLabel(int channel) { return *labels[channel]; }
+  Label& getLabel(int channel) { return labels[channel]; }
+  Label* getLinkLabel() { return linkLabel ? linkLabel.get() : nullptr; }
 
-  void resize(Point<float> topLeft,
-              float width,
-              float rowHeight,
-              float rowGap = 0.f,
-              bool leaveFirstRowBlack = true)
+  void resized() override
   {
-    if (leaveFirstRowBlack) {
-      topLeft.y += rowHeight + rowGap;
-    }
+    constexpr float rowGap = 3.f;
+    float rowHeight = linkLabel ? (getHeight() - 3.f * rowGap) / 4.f
+                                : (getHeight() - 2.f * rowGap) / 3.f;
+
+    float y = rowHeight + rowGap;
     for (int i = 0; i < 2; ++i) {
-      labels[i]->setTopLeftPosition(topLeft.x, topLeft.y);
-      labels[i]->setSize(width, rowHeight);
-      topLeft.y += rowHeight + rowGap;
+      labels[i].setTopLeftPosition(0, y);
+      labels[i].setSize(getWidth(), rowHeight);
+      y += rowHeight + rowGap;
     }
     if (linkLabel) {
-      linkLabel->setTopLeftPosition(topLeft.x, topLeft.y);
-      linkLabel->setSize(width, rowHeight);
+      linkLabel->setTopLeftPosition(0, y);
+      linkLabel->setSize(getWidth(), rowHeight);
     }
   }
 
-  ChannelLabels(ChannelLabels&&) = default;
-  ChannelLabels& operator=(ChannelLabels&&) = default;
+  void paint(Graphics& g)
+  {
+    tableSettings.paintTable(
+      g, getWidth(), getHeight(), linkLabel ? true : false);
+  }
 };
