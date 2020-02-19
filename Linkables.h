@@ -143,7 +143,43 @@ public:
 
   void resized() override
   {
-    int rowHeight = linked ? (getHeight()) / 4.f : (getHeight()) / 3.f;
+    Grid grid;
+    using Track = Grid::TrackInfo;
+    grid.templateColumns = { Track(1_fr) };
+
+    for (int i = 0; i < (linked ? 4 : 3); ++i) {
+      grid.templateRows.add(Track(1_fr));
+    }
+
+    int const rowHeight = linked ? (getHeight()) / 4.f : (getHeight()) / 3.f;
+
+    constexpr int controlGap = std::is_same_v<Control, Slider> ? 0 : 4;
+
+    grid.items = { GridItem(label)
+                     .withWidth(getWidth() - 2 * tableSettings.gap)
+                     .withAlignSelf(GridItem::AlignSelf::center)
+                     .withJustifySelf(GridItem::JustifySelf::center),
+                   GridItem(controls[0].getControl())
+                     .withWidth(getWidth() - 2 * tableSettings.gap)
+                     .withHeight(rowHeight - 2 * controlGap)
+                     .withAlignSelf(GridItem::AlignSelf::center)
+                     .withJustifySelf(GridItem::JustifySelf::center),
+                   GridItem(controls[1].getControl())
+                     .withWidth(getWidth() - 2 * tableSettings.gap)
+                     .withHeight(rowHeight - 2 * controlGap)
+                     .withAlignSelf(GridItem::AlignSelf::center)
+                     .withJustifySelf(GridItem::JustifySelf::center) };
+
+    if (linked) {
+      grid.items.add(GridItem(linked->getControl())
+                       .withWidth(26)
+                       .withAlignSelf(GridItem::AlignSelf::center)
+                       .withJustifySelf(GridItem::JustifySelf::center));
+    }
+
+    grid.performLayout(getLocalBounds());
+
+    /*int rowHeight = linked ? (getHeight()) / 4.f : (getHeight()) / 3.f;
 
     label.setTopLeftPosition(0, 0);
     label.setSize(getWidth(), rowHeight);
@@ -163,9 +199,9 @@ public:
 
     if (linked) {
       linked->getControl().setTopLeftPosition(
-        0 + jmax(0.f, 0.5f * (getWidth() - rowHeight)), y);
+        jmax(0.f, 8 + 0.5f * (getWidth() - rowHeight)), y);
       linked->getControl().setSize(rowHeight, rowHeight);
-    }
+    }*/
   }
 
   void paint(Graphics& g) override
