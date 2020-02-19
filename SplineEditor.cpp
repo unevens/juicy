@@ -717,8 +717,8 @@ SplineNodeEditor::setNode(int newNodeIndex)
   auto& linkedParamID = node.linked.getID();
   auto& enabledParamID = node.enabled.getID();
 
-  linked.SetParameter(linkedParamID);
-  enabled.SetParameter(enabledParamID);
+  linked.setParameter(linkedParamID);
+  enabled.setParameter(enabledParamID);
 
   bool isLinked = apvts.getParameter(linkedParamID)->getValue() >= 0.5f;
 

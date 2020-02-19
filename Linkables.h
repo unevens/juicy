@@ -132,7 +132,7 @@ public:
   void parameterChanged(const String&, float newValue) override
   {
     bool const isLinked = newValue >= 0.5f;
-    controls[1].SetParameter(paramIDs[isLinked ? 0 : 1]);
+    controls[1].setParameter(paramIDs[isLinked ? 0 : 1]);
   }
 
   ToggleButton* getLinked() { return linked ? &linked->getControl() : nullptr; }
@@ -203,10 +203,12 @@ public:
                                         "",
                                         makeLinkedControl)
   {
+    this->paramIDs[0] = channel0ParamID;
+    this->paramIDs[1] = channel1ParamID;
     this->controls[0] =
       AttachedComboBox(*this, apvts, channel0ParamID, choices);
     this->controls[1] =
-      AttachedComboBox(*this, apvts, channel1ParamID, choices);
+      AttachedComboBox(*this, apvts, channel0ParamID, choices);
   }
 
   template<class ParameterClass>

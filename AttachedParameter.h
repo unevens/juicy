@@ -36,13 +36,13 @@ public:
         if (setup) {
             setup(*control);
         }
-        SetParameter(paramID);
+        setParameter(paramID);
         owner.addAndMakeVisible(*control);
     }
 
     virtual ~Attached() { owner->removeChildComponent(control.get()); }
 
-    void SetParameter(String const& paramID)
+    void setParameter(String const& paramID)
     {
         if (paramID == "") {
             return;
