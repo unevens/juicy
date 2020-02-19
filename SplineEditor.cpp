@@ -607,7 +607,6 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
   , channelLabels(apvts, midSideParamID, false)
 {
   setOpaque(false);
-
   enabled.getControl().setButtonText("Node is Active");
   linked.getControl().setButtonText("Node is Linked");
 
@@ -641,14 +640,15 @@ SplineNodeEditor::resized()
 {
   int const rowHeight = getHeight() / 4;
   label.setTopLeftPosition(0, 0);
-  label.setSize(120, rowHeight);
-  selectedNode.setTopLeftPosition(120, rowHeight * 0.1);
+  label.setSize(116, rowHeight);
+  selectedNode.setTopLeftPosition(116, rowHeight * 0.1);
   selectedNode.setSize(60, rowHeight * 0.8);
-  int const halfRemainder = (getWidth() - 180) / 2;
-  enabled.getControl().setTopLeftPosition(200, 0);
-  enabled.getControl().setSize(halfRemainder, rowHeight);
-  linked.getControl().setTopLeftPosition(180 + halfRemainder, 0);
-  linked.getControl().setSize(halfRemainder, rowHeight);
+
+  int const quarter = (getWidth() - 180) / 4;
+  enabled.getControl().setTopLeftPosition(180 + quarter - 60, 0);
+  enabled.getControl().setSize(120, rowHeight);
+  linked.getControl().setTopLeftPosition(180 + 3 * quarter - 60, 0);
+  linked.getControl().setSize(120, rowHeight);
 
   int const secondRow = rowHeight;
   int left = 0.f;
