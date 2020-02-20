@@ -17,15 +17,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "SplineEditor.h"
 
-SplineEditor::SplineEditor(SplineParameters& parameters,
-                           AudioProcessorValueTreeState& apvts)
+SplineEditor::SplineEditor(
+  SplineParameters& parameters,
+  AudioProcessorValueTreeState& apvts,
+  bool isWaveShaper,
+  LinkableParameter<WrappedBoolParameter>* symmetryParameter)
   : parameters(parameters)
   , spline(parameters, apvts, [this]() { OnSplineChange(); })
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
+  , isWaveShaper(isWaveShaper)
+  , symmetryParameter(symmetryParameter)
 {
-  splineHolder.Initialize<JUICY_MAX_SPLINE_EDITOR_NUM_NODES>();
+  if (isWaveShaper) {
+    waveShaperHolder.Initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
+  }
+  else {
+    splineHolder.Initialize<JUICY_MAX_SPLINE_EDITOR_NUM_NODES>();
+  }
 
   setSize(400, 400);
 
@@ -134,9 +144,22 @@ SplineEditor::paint(Graphics& g)
   // curves
 
   if (redrawCurvesFlag) {
-    splineDsp = parameters.updateSpline(splineHolder);
-    splineDsp->Reset();
-    splineDsp->ProcessBlock(inputBuffer, outputbuffer);
+    if (isWaveShaper) {
+      waveShaperDsp = parameters.updateSpline(waveShaperHolder);
+      if (symmetryParameter) {
+        for (int c = 0; c < 2; ++c) {
+          waveShaperDsp->SetIsSymmetric(symmetryParameter->get(c)->getValue() >=
+                                        0.5f);
+        }
+      }
+      waveShaperDsp->Reset();
+      waveShaperDsp->ProcessBlock(inputBuffer, outputbuffer);
+    }
+    else {
+      splineDsp = parameters.updateSpline(splineHolder);
+      splineDsp->Reset();
+      splineDsp->ProcessBlock(inputBuffer, outputbuffer);
+    }
     redrawCurvesFlag = false;
   }
 

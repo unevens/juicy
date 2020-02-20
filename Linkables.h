@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
-#include "AttachedParameter.h"
+#include "AttachedControls.h"
 #include "WrappedBoolParameter.h"
 #include <array>
 
@@ -26,12 +26,34 @@ struct LinkableParameter
   WrappedBoolParameter linked;
   std::array<ParameterClass*, 2> parameters;
 
+  String const& getID(int channel) { return parameters[channel]->paramID; }
+
   ParameterClass* get(int channel)
   {
     if (linked.getValue()) {
       return parameters[0];
     }
     return parameters[channel];
+  }
+};
+
+template<>
+struct LinkableParameter<WrappedBoolParameter>
+{
+  WrappedBoolParameter linked;
+  std::array<WrappedBoolParameter, 2> parameters;
+
+  String const& getID(int channel)
+  {
+    return parameters[channel].getParameter()->paramID;
+  }
+
+  RangedAudioParameter* get(int channel)
+  {
+    if (linked.getValue()) {
+      return parameters[0].getParameter();
+    }
+    return parameters[channel].getParameter();
   }
 };
 
@@ -59,7 +81,6 @@ struct LinkableControlTable
         g.drawRect(0, 0, width, 3 * rowHeight);
       }
     }
-
   }
 };
 
@@ -114,8 +135,8 @@ public:
     : LinkableControl(apvts,
                       name,
                       linkableParameters.linked.getID(),
-                      linkableParameters.parameters[0]->paramID,
-                      linkableParameters.parameters[1]->paramID,
+                      linkableParameters.getID(0),
+                      linkableParameters.getID(1),
                       true)
   {}
 
@@ -133,7 +154,7 @@ public:
 
   Control& getControl(int channel) { return controls[channel].getControl(); }
 
-  void resized() override
+  virtual void resized() override
   {
     Grid grid;
     using Track = Grid::TrackInfo;
@@ -147,17 +168,21 @@ public:
 
     constexpr int controlGap = std::is_same_v<Control, Slider> ? 0 : 4;
 
+    int const witdh = std::is_same_v<Control, ToggleButton>
+                        ? 26
+                        : getWidth() - 2 * tableSettings.gap;
+
     grid.items = { GridItem(label)
                      .withWidth(getWidth() - 2 * tableSettings.gap)
                      .withAlignSelf(GridItem::AlignSelf::center)
                      .withJustifySelf(GridItem::JustifySelf::center),
                    GridItem(controls[0].getControl())
-                     .withWidth(getWidth() - 2 * tableSettings.gap)
+                     .withWidth(witdh)
                      .withHeight(rowHeight - 2 * controlGap)
                      .withAlignSelf(GridItem::AlignSelf::center)
                      .withJustifySelf(GridItem::JustifySelf::center),
                    GridItem(controls[1].getControl())
-                     .withWidth(getWidth() - 2 * tableSettings.gap)
+                     .withWidth(witdh)
                      .withHeight(rowHeight - 2 * controlGap)
                      .withAlignSelf(GridItem::AlignSelf::center)
                      .withJustifySelf(GridItem::JustifySelf::center) };
@@ -177,7 +202,7 @@ public:
     tableSettings.paintTable(g, getWidth(), getHeight(), linked ? true : false);
   }
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinkableControl)
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinkableControl)
 };
 
 class LinkableComboBox : public LinkableControl<AttachedComboBox>
@@ -214,8 +239,8 @@ public:
                        name,
                        choices,
                        linkableParameters.linked.getID(),
-                       linkableParameters.parameters[0]->paramID,
-                       linkableParameters.parameters[1]->paramID,
+                       linkableParameters.getID(0),
+                       linkableParameters.getID(1),
                        true)
   {}
 
@@ -290,5 +315,5 @@ public:
       g, getWidth(), getHeight(), linkLabel ? true : false);
   }
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChannelLabels)
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChannelLabels)
 };

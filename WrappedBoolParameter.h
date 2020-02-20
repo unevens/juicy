@@ -32,6 +32,8 @@ public:
                                                         bool value,
                                                         bool useFloat = false);
 
+  RangedAudioParameter* getParameter();
+
   WrappedBoolParameter(AudioParameterFloat* floatParameter = nullptr,
                        AudioParameterBool* boolParameter = nullptr)
     : floatParameter(floatParameter)
@@ -74,4 +76,15 @@ WrappedBoolParameter::createParameter(String const& name,
       name, name, { 0.0f, 1.f, 1.0f }, value ? 1.f : 0.f);
     return std::unique_ptr<RangedAudioParameter>(floatParameter);
   }
+}
+
+inline RangedAudioParameter*
+WrappedBoolParameter::getParameter()
+{
+  auto p = static_cast<RangedAudioParameter*>(floatParameter);
+  if (p) {
+    return p;
+  }
+  p = static_cast<RangedAudioParameter*>(boolParameter);
+  return p;
 }
