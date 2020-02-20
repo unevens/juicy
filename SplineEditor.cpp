@@ -193,7 +193,7 @@ SplineEditor::paint(Graphics& g)
                    : node.enabled->getValue() && !node.linked->getValue();
 
           g.setColour(isEnabled ? nodeColours[c]
-                                : nodeColours[c].withAlpha(0.5f));
+                                : nodeColours[c].darker(0.5f).withAlpha(0.5f));
 
           fillNode(coord, bigControlPointSize);
 
