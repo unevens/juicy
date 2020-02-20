@@ -32,6 +32,7 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
     for (int n = 1; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES; ++n) {
       auto spline = waveShaperHolder.GetSpline(n);
       spline->SetWet(1.f);
+      spline->SetDc(0.f);
       spline->SetHighPassFrequency(0.f);
     }
   }
@@ -157,7 +158,6 @@ SplineEditor::paint(Graphics& g)
         for (int c = 0; c < 2; ++c) {
           waveShaperDsp->SetIsSymmetric(
             waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
-          waveShaperDsp->SetDc(waveShaperParameters->dc.get(c)->get(), c);
         }
 
         waveShaperDsp->Reset();
