@@ -37,12 +37,16 @@ GainVuMeter::GainVuMeter(std::array<std::atomic<float>*, 2> source,
 void
 GainVuMeter::paint(Graphics& g)
 {
-  g.fillAll(Colours::black);
-  g.setFont(12);
   float const dx = getWidth() / 3.f;
+
+  g.setColour(Colours::black);
+  g.fillRect(0.f, 0.f, dx, (float)getHeight());
+  g.fillRect(2.f * dx, 0.f, dx, (float)getHeight());
+
+  g.setFont(12);
   float const halfHeight = getHeight() * 0.5f;
+
   g.setColour(Colours::darkgrey);
-  g.fillRect(dx, 0.f, dx, (float)getHeight());
 
   for (int c = 0; c < 2; ++c) {
     float const db = jlimit(-range, range, source[c]->load());
@@ -66,7 +70,7 @@ GainVuMeter::paint(Graphics& g)
     g.setGradientFill(topGradient);
     float const maxY = scaling(jmin(1.f, maxValue[c] / range));
     float const maxYCoord = halfHeight * (1.f - maxY);
-    g.drawLine(left, maxYCoord, left + dx, maxYCoord, 1.f);
+    g.drawLine(left, maxYCoord, left + dx, maxYCoord, 2);
 
     if (maxYCoord >= 24 && maxYCoord < halfHeight - 20) {
       g.drawText(String(maxValue[c], 1),
@@ -77,7 +81,7 @@ GainVuMeter::paint(Graphics& g)
     g.setGradientFill(bottomGradient);
     float const minY = scaling(abs(jmax(-1.f, minValue[c] / range)));
     float const minYCoord = halfHeight * (1.f + minY);
-    g.drawLine(left, minYCoord, left + dx, minYCoord, 1.f);
+    g.drawLine(left, minYCoord, left + dx, minYCoord, 2);
 
     if (minYCoord + 24 < getHeight() && minYCoord > halfHeight + 20) {
       g.drawText(String(minValue[c], 1),
@@ -85,7 +89,7 @@ GainVuMeter::paint(Graphics& g)
                  Justification::centred);
     }
 
-    g.setColour(Colours::white);
+    g.setColour(Colours::black);
 
     if (db >= 0.1f) {
       g.drawText(String(db, 1),
@@ -99,8 +103,10 @@ GainVuMeter::paint(Graphics& g)
     }
   }
 
-  g.setColour(Colours::white);
-  g.drawLine(0.f, halfHeight, getWidth(), halfHeight, 1.f);
+  g.setColour(Colours::black);
+  g.drawLine(dx, halfHeight, 2.f * dx, halfHeight, 2);
+
+  g.setFont({ 12, Font::bold });
 
   std::function<void(int)> const drawReferenceLine = [&](int db) {
     if (abs(db) > range) {
@@ -113,7 +119,7 @@ GainVuMeter::paint(Graphics& g)
       (int)(halfHeight -
             std::copysign(scaling(abs(db / range)), db / range) * halfHeight));
 
-    g.drawLine(dx, y, 2.f * dx, y);
+    g.drawLine(dx, y, 2.f * dx, y, 2);
 
     int const textHeight = y + (db > 0.f ? 0 : -16);
 

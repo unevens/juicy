@@ -44,8 +44,6 @@ SplineEditor::paint(Graphics& g)
   g.fillAll(backgroundColour);
   g.setFont(font);
 
-  g.setColour(gridColour);
-
   // grid vertical lines
   {
     float const cellWidth =
@@ -67,12 +65,14 @@ SplineEditor::paint(Graphics& g)
         continue;
       }
 
+      g.setColour(gridColour);
       g.drawLine(Line(xCoord, 0.f, xCoord, (float)getHeight()));
 
       auto const textRectangle =
         Rectangle{ xCoord + 4.f, 4.f, cellWidthPixels - 6.f, 20.f };
 
       if (bounds.contains(textRectangle)) {
+        g.setColour(gridLabelColour);
         g.drawText(String(x, 2), textRectangle, Justification::left);
       }
 
@@ -99,11 +99,13 @@ SplineEditor::paint(Graphics& g)
         continue;
       }
 
+      g.setColour(gridColour);
       g.drawLine(Line(0.f, yCoord, (float)getWidth(), yCoord));
 
       auto textRectangle = Rectangle{ 4.f, yCoord - 4.f, 50.f, 20.f };
 
       if (bounds.contains(textRectangle)) {
+        g.setColour(gridLabelColour);
         g.drawText(String(y, 2), textRectangle, Justification::left);
       }
 
@@ -639,16 +641,22 @@ void
 SplineNodeEditor::resized()
 {
   int const rowHeight = getHeight() / 4;
+
   label.setTopLeftPosition(0, 0);
   label.setSize(116, rowHeight);
   selectedNode.setTopLeftPosition(116, rowHeight * 0.1);
   selectedNode.setSize(60, rowHeight * 0.8);
 
-  int const quarter = (getWidth() - 180) / 4;
-  enabled.getControl().setTopLeftPosition(180 + quarter - 60, 0);
-  enabled.getControl().setSize(120, rowHeight);
-  linked.getControl().setTopLeftPosition(180 + 3 * quarter - 60, 0);
-  linked.getControl().setSize(120, rowHeight);
+
+  Grid grid;
+  using Track = Grid::TrackInfo;
+
+  grid.templateRows = { Track(1_fr) };
+  grid.templateColumns = { Track(1_fr), Track(1_fr) };
+  grid.items = { GridItem(enabled.getControl()),
+                 GridItem(linked.getControl()) };
+
+  grid.performLayout({ 220, 0, getWidth() - 220, rowHeight });
 
   int const secondRow = rowHeight;
   int left = 0.f;
@@ -659,13 +667,13 @@ SplineNodeEditor::resized()
     left += width;
   };
 
-  resize(channelLabels, 40);
+  resize(channelLabels, 50);
 
   if (!x || !y || !s || !t) {
     return;
   }
 
-  int width = std::floor(((float)getWidth() - 40.f) / 4.f);
+  int width = std::floor(((float)getWidth() - 50.f) / 4.f);
 
   resize(*x, width);
   resize(*y, width);
@@ -676,7 +684,7 @@ SplineNodeEditor::resized()
 void
 SplineNodeEditor::paint(Graphics& g)
 {
-  int const width = 40 + 4 * std::floor(((float)getWidth() - 40.f) / 4.f);
+  int const width = 50 + 4 * std::floor(((float)getWidth() - 50.f) / 4.f);
   g.fillAll(tableSettings.backgroundColour);
   g.setColour(tableSettings.lineColour);
   g.drawLine(1, 1, width - 1, 1, tableSettings.lineThickness);

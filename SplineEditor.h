@@ -108,7 +108,9 @@ public:
 
   Colour backgroundColour = Colours::black;
 
-  Colour gridColour = Colours::darkgrey;
+  Colour gridColour = Colours::darkgrey.darker(1.f);
+
+  Colour gridLabelColour = Colours::darkgrey;
 
   Colour mousePositionColour = Colours::white;
 

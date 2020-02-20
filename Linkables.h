@@ -252,10 +252,13 @@ public:
   {
     parameterChanged("", apvts.getParameter(midSideParamID)->getValue());
     apvts.addParameterListener(midSideParamID, this);
-    addAndMakeVisible(labels[0]);
-    addAndMakeVisible(labels[1]);
+    for (int c = 0; c < 2; ++c) {
+      addAndMakeVisible(labels[c]);
+      labels[c].setJustificationType(Justification::centred);
+    }
     if (linkLabel) {
       addAndMakeVisible(*linkLabel);
+      linkLabel->setJustificationType(Justification::centred);
     }
   }
 
