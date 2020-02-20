@@ -33,12 +33,18 @@ SimpleLookAndFeel::apply()
   setColour(Slider::ColourIds::textBoxBackgroundColourId, Colours::black);
   setColour(Slider::ColourIds::textBoxHighlightColourId, Colours::darkgrey);
   setColour(Slider::ColourIds::textBoxOutlineColourId, Colours::darkgrey);
+  setColour(Slider::ColourIds::textBoxOutlineColourId, Colours::darkgrey);
   setColour(ComboBox::ColourIds::arrowColourId, Colours::white);
   setColour(ComboBox::ColourIds::backgroundColourId, Colours::black);
   setColour(ComboBox::ColourIds::textColourId, Colours::white);
   setColour(ComboBox::ColourIds::buttonColourId, Colours::white);
   setColour(ComboBox::ColourIds::outlineColourId, Colours::grey);
   setColour(ComboBox::ColourIds::focusedOutlineColourId, Colours::white);
+  setColour(PopupMenu::ColourIds::backgroundColourId, Colours::black);
+  setColour(PopupMenu::ColourIds::highlightedBackgroundColourId,
+            Colours::darkgrey);
+  setColour(PopupMenu::ColourIds::textColourId, Colours::white);
+  setColour(PopupMenu::ColourIds::highlightedTextColourId, Colours::white);
   setColour(ToggleButton::ColourIds::textColourId, frontColour);
   setColour(ToggleButton::ColourIds::tickColourId, frontColour);
   setColour(ToggleButton::ColourIds::tickDisabledColourId, frontColour);
@@ -46,9 +52,9 @@ SimpleLookAndFeel::apply()
 
 void
 SimpleLookAndFeel::drawToggleButton(Graphics& g,
-                                       ToggleButton& button,
-                                       bool shouldDrawButtonAsHighlighted,
-                                       bool shouldDrawButtonAsDown)
+                                    ToggleButton& button,
+                                    bool shouldDrawButtonAsHighlighted,
+                                    bool shouldDrawButtonAsDown)
 {
   auto fontSize = simpleFontSize;
   auto tickWidth = fontSize * 1.1f;
