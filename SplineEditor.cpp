@@ -21,7 +21,11 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
                            AudioProcessorValueTreeState& apvts,
                            WaveShaperParameters* waveShaperParameters)
   : parameters(parameters)
-  , spline(parameters, apvts, [this]() { OnSplineChange(); })
+  , spline(
+      parameters,
+      apvts,
+      [this]() { OnSplineChange(); },
+      waveShaperParameters)
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
@@ -599,7 +603,8 @@ SplineEditor::getNodeCoord(int nodeIndex, int channel)
 
 SplineAttachments::SplineAttachments(SplineParameters& parameters,
                                      AudioProcessorValueTreeState& apvts,
-                                     std::function<void(void)> onChange)
+                                     std::function<void(void)> onChange,
+                                     WaveShaperParameters* waveShaperParameters)
 {
   auto const makeNodeAttachments =
     [&](SplineParameters::LinkableNodeParameters node, int channel) {
@@ -629,6 +634,13 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
         { makeNodeAttachments(node, 0), makeNodeAttachments(node, 1) } },
       BoolAttachment::New(apvts, node.enabled.getID(), onChange),
       BoolAttachment::New(apvts, node.linked.getID(), onChange) });
+  }
+
+  if (waveShaperParameters) {
+    for (int c = 0; c < 2; ++c) {
+      symmetry[c] = BoolAttachment::New(
+        apvts, waveShaperParameters->symmetry.getID(c), onChange);
+    }
   }
 }
 

@@ -51,9 +51,12 @@ struct SplineAttachments
 
   std::vector<LinkableNodeAttachments> nodes;
 
+  std::array<std::unique_ptr<BoolAttachment>,2> symmetry;
+
   SplineAttachments(SplineParameters& parameters,
                     AudioProcessorValueTreeState& apvts,
-                    std::function<void(void)> onChange);
+                    std::function<void(void)> onChange,
+                    WaveShaperParameters* waveShaperParameters = nullptr);
 
   int getNumActiveNodes();
 };
