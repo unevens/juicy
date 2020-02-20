@@ -50,6 +50,26 @@ SimpleLookAndFeel::apply()
   setColour(ToggleButton::ColourIds::tickDisabledColourId, frontColour);
 }
 
+Font
+SimpleLookAndFeel::getLabelFont(Label& label)
+{
+  bool const isInsideSlider =
+    dynamic_cast<Slider*>(label.getParentComponent()) != nullptr;
+
+  if (isInsideSlider) {
+    return Font(simpleSliderLabelFontSize);
+  }
+
+  bool const isInsideComboBox =
+    dynamic_cast<ComboBox*>(label.getParentComponent()) != nullptr;
+
+  if (isInsideComboBox) {
+    return Font(simpleFontSize);
+  }
+
+  return Font(simpleFontSize, simpleFontStyle);
+}
+
 void
 SimpleLookAndFeel::drawToggleButton(Graphics& g,
                                     ToggleButton& button,

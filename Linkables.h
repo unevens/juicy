@@ -176,6 +176,8 @@ public:
   {
     tableSettings.paintTable(g, getWidth(), getHeight(), linked ? true : false);
   }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinkableControl)
 };
 
 class LinkableComboBox : public LinkableControl<AttachedComboBox>
@@ -216,6 +218,8 @@ public:
                        linkableParameters.parameters[1]->paramID,
                        true)
   {}
+
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinkableComboBox)
 };
 
 class ChannelLabels
@@ -285,4 +289,6 @@ public:
     tableSettings.paintTable(
       g, getWidth(), getHeight(), linkLabel ? true : false);
   }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChannelLabels)
 };

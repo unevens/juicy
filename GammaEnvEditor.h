@@ -51,4 +51,6 @@ private:
   LinkableControl<AttachedSlider> release;
   LinkableControl<AttachedSlider> attackDelay;
   LinkableControl<AttachedSlider> releaseDelay;
+
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GammaEnvEditor)
 };

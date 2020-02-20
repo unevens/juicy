@@ -37,24 +37,8 @@ public:
     return Font(simpleFontSize, simpleFontStyle);
   }
 
-  Font getLabelFont(Label& label) override
-  {
-    bool const isInsideSlider =
-      dynamic_cast<Slider*>(label.getParentComponent()) != nullptr;
+  Font getLabelFont(Label& label) override;
 
-    if (isInsideSlider) {
-      return Font(simpleSliderLabelFontSize);
-    }
-
-    bool const isInsideComboBox =
-      dynamic_cast<ComboBox*>(label.getParentComponent()) != nullptr;
-
-    if (isInsideComboBox) {
-      return Font(simpleFontSize);
-    }
-
-    return Font(simpleFontSize, simpleFontStyle);
-  }
 
   void drawToggleButton(Graphics& g,
                         ToggleButton& button,
