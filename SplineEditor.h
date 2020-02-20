@@ -190,7 +190,7 @@ private:
   avec::WaveShaperInterface<Vec2d>* waveShaperDsp = nullptr;
 
   avec::VecBuffer<Vec2d> inputBuffer;
-  avec::VecBuffer<Vec2d> outputbuffer;
+  avec::VecBuffer<Vec2d> outputBuffer;
 
   void setupSplineInputBuffer();
 

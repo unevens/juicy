@@ -142,25 +142,37 @@ SplineEditor::paint(Graphics& g)
 
   if (redrawCurvesFlag) {
     if (waveShaperParameters) {
-
       waveShaperDsp = parameters.updateSpline(waveShaperHolder);
-
-      for (int c = 0; c < 2; ++c) {
-        waveShaperDsp->SetIsSymmetric(
-          waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
-        waveShaperDsp->SetDc(waveShaperParameters->dc.get(c)->get(), c);
-        waveShaperDsp->SetWet(waveShaperParameters->dryWet.get(c)->get(), c);
-        waveShaperDsp->SetHighPassFrequency(
-          waveShaperParameters->dcCutoff.get(c)->get(), c);
+      if (waveShaperDsp) {
+        for (int c = 0; c < 2; ++c) {
+          waveShaperDsp->SetIsSymmetric(
+            waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
+          waveShaperDsp->SetDc(waveShaperParameters->dc.get(c)->get(), c);
+          waveShaperDsp->SetWet(
+            0.01f * waveShaperParameters->dryWet.get(c)->get(), c);
+          waveShaperDsp->SetHighPassFrequency(
+            waveShaperParameters->dcCutoff.get(c)->get(), c);
+        }
+        waveShaperDsp->Reset();
+        waveShaperDsp->ProcessBlock(inputBuffer, outputBuffer);
       }
-
-      waveShaperDsp->Reset();
-      waveShaperDsp->ProcessBlock(inputBuffer, outputbuffer);
+      else {
+        std::copy(&inputBuffer(0),
+                  &inputBuffer(0) + inputBuffer.GetScalarSize(),
+                  &outputBuffer(0));
+      }
     }
     else {
       splineDsp = parameters.updateSpline(splineHolder);
-      splineDsp->Reset();
-      splineDsp->ProcessBlock(inputBuffer, outputbuffer);
+      if (splineDsp) {
+        splineDsp->Reset();
+        splineDsp->ProcessBlock(inputBuffer, outputBuffer);
+      }
+      else {
+        std::copy(&inputBuffer(0),
+                  &inputBuffer(0) + inputBuffer.GetScalarSize(),
+                  &outputBuffer(0));
+      }
     }
     redrawCurvesFlag = false;
   }
@@ -170,12 +182,12 @@ SplineEditor::paint(Graphics& g)
   for (int c = 1; c >= 0; --c) {
     Path path;
 
-    float prevY = yToPixel(outputbuffer[0][c]);
+    float prevY = yToPixel(outputBuffer[0][c]);
 
     for (int i = 1; i < getWidth(); ++i) {
 
       float const y = jlimit(
-        -10.f, getHeight() + 10.f, yToPixelUnclamped(outputbuffer[i][c]));
+        -10.f, getHeight() + 10.f, yToPixelUnclamped(outputBuffer[i][c]));
 
       path.addLineSegment(Line<float>(i - 1, prevY, i, y), lineThickness);
 
@@ -539,7 +551,7 @@ void
 SplineEditor::setupSplineInputBuffer()
 {
   inputBuffer.SetNumSamples(getWidth());
-  outputbuffer.SetNumSamples(getWidth());
+  outputBuffer.SetNumSamples(getWidth());
 
   for (int i = 0; i < getWidth(); ++i) {
     inputBuffer[i] = pixelToX(i);
