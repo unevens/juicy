@@ -647,7 +647,6 @@ SplineNodeEditor::resized()
   selectedNode.setTopLeftPosition(116, rowHeight * 0.1);
   selectedNode.setSize(60, rowHeight * 0.8);
 
-
   Grid grid;
   using Track = Grid::TrackInfo;
 
@@ -684,8 +683,11 @@ SplineNodeEditor::resized()
 void
 SplineNodeEditor::paint(Graphics& g)
 {
+  g.setColour(tableSettings.backgroundColour);
+  g.fillRect(0, 0, getWidth(), getHeight() / 4);
+
   int const width = 50 + 4 * std::floor(((float)getWidth() - 50.f) / 4.f);
-  g.fillAll(tableSettings.backgroundColour);
+
   g.setColour(tableSettings.lineColour);
   g.drawLine(1, 1, width - 1, 1, tableSettings.lineThickness);
   g.drawLine(1, 1, 1, width / 4, tableSettings.lineThickness);

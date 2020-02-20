@@ -37,6 +37,9 @@ public:
   void mouseDown(MouseEvent const& event) override;
 
   Colour backgroundColour = Colours::black;
+  Colour internalColour = Colours::transparentBlack;
+  Colour labelColour = Colours::white;
+  
   float range;
 
   void setColours(Colour lowColour, Colour highColour);

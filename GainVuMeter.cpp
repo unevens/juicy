@@ -37,6 +37,8 @@ GainVuMeter::GainVuMeter(std::array<std::atomic<float>*, 2> source,
 void
 GainVuMeter::paint(Graphics& g)
 {
+  g.fillAll(internalColour);
+
   float const dx = getWidth() / 3.f;
 
   g.setColour(Colours::black);
@@ -103,7 +105,7 @@ GainVuMeter::paint(Graphics& g)
     }
   }
 
-  g.setColour(Colours::black);
+  g.setColour(labelColour);
   g.drawLine(dx, halfHeight, 2.f * dx, halfHeight, 2);
 
   g.setFont({ 12, Font::bold });
