@@ -29,6 +29,11 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
 {
   if (waveShaperParameters) {
     waveShaperHolder.Initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
+    for (int n = 0; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES; ++n) {
+      auto spline = waveShaperHolder.GetSpline(n);
+      spline->SetWet(1.f);
+      spline->SetHighPassFrequency(0.f);
+    }
   }
   else {
     splineHolder.Initialize<JUICY_MAX_SPLINE_EDITOR_NUM_NODES>();
@@ -141,18 +146,20 @@ SplineEditor::paint(Graphics& g)
   // curves
 
   if (redrawCurvesFlag) {
+    redrawCurvesFlag = false;
+
     if (waveShaperParameters) {
+
       waveShaperDsp = parameters.updateSpline(waveShaperHolder);
+
       if (waveShaperDsp) {
+
         for (int c = 0; c < 2; ++c) {
           waveShaperDsp->SetIsSymmetric(
             waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
           waveShaperDsp->SetDc(waveShaperParameters->dc.get(c)->get(), c);
-          waveShaperDsp->SetWet(
-            0.01f * waveShaperParameters->dryWet.get(c)->get(), c);
-          waveShaperDsp->SetHighPassFrequency(
-            waveShaperParameters->dcCutoff.get(c)->get(), c);
         }
+
         waveShaperDsp->Reset();
         waveShaperDsp->ProcessBlock(inputBuffer, outputBuffer);
       }
@@ -163,7 +170,9 @@ SplineEditor::paint(Graphics& g)
       }
     }
     else {
+
       splineDsp = parameters.updateSpline(splineHolder);
+
       if (splineDsp) {
         splineDsp->Reset();
         splineDsp->ProcessBlock(inputBuffer, outputBuffer);
@@ -174,7 +183,6 @@ SplineEditor::paint(Graphics& g)
                   &outputBuffer(0));
       }
     }
-    redrawCurvesFlag = false;
   }
 
   constexpr float lineThickness = 1;
