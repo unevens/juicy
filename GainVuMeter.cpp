@@ -37,16 +37,62 @@ GainVuMeter::GainVuMeter(std::array<std::atomic<float>*, 2> source,
 void
 GainVuMeter::paint(Graphics& g)
 {
+  float const dx = getWidth() / 3.f;
+  float const halfHeight = getHeight() * 0.5f;
+
+  g.setFont(12);
+
   g.fillAll(internalColour);
 
-  float const dx = getWidth() / 3.f;
+  // reference lines
+
+  g.setColour(lineColour);
+
+  std::function<void(int)> const drawReferenceLine = [&](int db) {
+    if (abs(db) > range) {
+      return;
+    }
+
+    int const y = jlimit(
+      0,
+      getHeight(),
+      (int)(halfHeight -
+            std::copysign(scaling(abs(db / range)), db / range) * halfHeight));
+
+    g.setColour(lineColour);
+    if (db > 0.f) {
+      g.drawRect(0, y, getWidth(), (int)halfHeight - y);
+    }
+    else {
+      g.drawRect(0, (int)halfHeight, getWidth(), y - (int)halfHeight);
+    }
+
+    int const textHeight = y + (db > 0.f ? 0 : -16);
+
+    g.setColour(labelColour);
+    g.drawText((db > 0 ? "+" : "-") + String(abs(db)),
+               Rectangle((int)dx, textHeight, (int)dx, 16),
+               Justification::centred);
+
+    if (db > 0) {
+      drawReferenceLine(-db);
+    }
+  };
+
+  drawReferenceLine(1);
+  drawReferenceLine(3);
+  drawReferenceLine(6);
+  drawReferenceLine(12);
+  drawReferenceLine(24);
+  drawReferenceLine(36);
+
+  // background
 
   g.setColour(Colours::black);
   g.fillRect(0.f, 0.f, dx, (float)getHeight());
   g.fillRect(2.f * dx, 0.f, dx, (float)getHeight());
 
-  g.setFont(12);
-  float const halfHeight = getHeight() * 0.5f;
+  // meters
 
   g.setColour(Colours::darkgrey);
 
@@ -72,7 +118,7 @@ GainVuMeter::paint(Graphics& g)
     g.setGradientFill(topGradient);
     float const maxY = scaling(jmin(1.f, maxValue[c] / range));
     float const maxYCoord = halfHeight * (1.f - maxY);
-    g.drawLine(left, maxYCoord, left + dx, maxYCoord, 2);
+    g.drawLine(left, maxYCoord, left + dx, maxYCoord, 1);
 
     if (maxYCoord >= 24 && maxYCoord < halfHeight - 20) {
       g.drawText(String(maxValue[c], 1),
@@ -83,7 +129,7 @@ GainVuMeter::paint(Graphics& g)
     g.setGradientFill(bottomGradient);
     float const minY = scaling(abs(jmax(-1.f, minValue[c] / range)));
     float const minYCoord = halfHeight * (1.f + minY);
-    g.drawLine(left, minYCoord, left + dx, minYCoord, 2);
+    g.drawLine(left, minYCoord, left + dx, minYCoord, 1);
 
     if (minYCoord + 24 < getHeight() && minYCoord > halfHeight + 20) {
       g.drawText(String(minValue[c], 1),
@@ -105,41 +151,9 @@ GainVuMeter::paint(Graphics& g)
     }
   }
 
-  g.setColour(labelColour);
-  g.drawLine(dx, halfHeight, 2.f * dx, halfHeight, 2);
-
-  g.setFont({ 12, Font::bold });
-
-  std::function<void(int)> const drawReferenceLine = [&](int db) {
-    if (abs(db) > range) {
-      return;
-    }
-
-    int const y = jlimit(
-      1,
-      getHeight() - 1,
-      (int)(halfHeight -
-            std::copysign(scaling(abs(db / range)), db / range) * halfHeight));
-
-    g.drawLine(dx, y, 2.f * dx, y, 2);
-
-    int const textHeight = y + (db > 0.f ? 0 : -16);
-
-    g.drawText((db > 0 ? "+" : "-") + String(abs(db)),
-               Rectangle((int)dx, textHeight, (int)dx, 16),
-               Justification::centred);
-
-    if (db > 0) {
-      drawReferenceLine(-db);
-    }
-  };
-
-  drawReferenceLine(1);
-  drawReferenceLine(3);
-  drawReferenceLine(6);
-  drawReferenceLine(12);
-  drawReferenceLine(24);
-  drawReferenceLine(36);
+  g.setColour(lineColour);
+  g.drawRect(getLocalBounds());
+  g.drawRect(dx, 0.f, dx, (float)getHeight());
 }
 
 void

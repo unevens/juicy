@@ -658,12 +658,12 @@ SplineNodeEditor::resized()
   grid.performLayout({ 220, 0, getWidth() - 220, rowHeight });
 
   int const secondRow = rowHeight;
-  int left = 0.f;
+  int left = 0;
 
   auto const resize = [&](auto& component, int width) {
     component.setTopLeftPosition(left, secondRow);
     component.setSize(width, rowHeight * 3);
-    left += width;
+    left += width - 1;
   };
 
   resize(channelLabels, 50);
@@ -672,7 +672,7 @@ SplineNodeEditor::resized()
     return;
   }
 
-  int width = std::floor(((float)getWidth() - 50.f) / 4.f);
+  int width = std::floor(((float)getWidth() - 45.f) / 4.f);
 
   resize(*x, width);
   resize(*y, width);
@@ -683,16 +683,12 @@ SplineNodeEditor::resized()
 void
 SplineNodeEditor::paint(Graphics& g)
 {
+  int right = s->getBounds().getRight();
   g.setColour(tableSettings.backgroundColour);
-  g.fillRect(0, 0, getWidth(), getHeight() / 4);
-
-  int const width = 50 + 4 * std::floor(((float)getWidth() - 50.f) / 4.f);
+  g.fillRect(0, 0, right, getHeight() / 4);
 
   g.setColour(tableSettings.lineColour);
-  g.drawLine(1, 1, width - 1, 1, tableSettings.lineThickness);
-  g.drawLine(1, 1, 1, width / 4, tableSettings.lineThickness);
-  g.drawLine(
-    width - 1, 1, width - 1, getHeight() / 4, tableSettings.lineThickness);
+  g.drawRect(0, 0, right, 1 + getHeight() / 4);
 }
 
 void
@@ -707,7 +703,6 @@ SplineNodeEditor::setTableSettings(LinkableControlTable tableSettings)
 {
   this->tableSettings = tableSettings;
   channelLabels.tableSettings = tableSettings;
-  tableSettings.drawLeftVericalLine = false;
   x->tableSettings = tableSettings;
   y->tableSettings = tableSettings;
   t->tableSettings = tableSettings;
@@ -747,8 +742,6 @@ SplineNodeEditor::setNode(int newNodeIndex)
 
   addAndMakeVisible(*x);
 
-  x->tableSettings.drawLeftVericalLine = false;
-
   if (y) {
     removeChildComponent(y.get());
   }
@@ -762,8 +755,6 @@ SplineNodeEditor::setNode(int newNodeIndex)
     false);
 
   addAndMakeVisible(*y);
-
-  y->tableSettings.drawLeftVericalLine = false;
 
   if (t) {
     removeChildComponent(t.get());
@@ -779,8 +770,6 @@ SplineNodeEditor::setNode(int newNodeIndex)
 
   addAndMakeVisible(*t);
 
-  t->tableSettings.drawLeftVericalLine = false;
-
   if (s) {
     removeChildComponent(s.get());
   }
@@ -794,8 +783,6 @@ SplineNodeEditor::setNode(int newNodeIndex)
     false);
 
   addAndMakeVisible(*s);
-
-  s->tableSettings.drawLeftVericalLine = false;
 
   setTableSettings(tableSettings);
 

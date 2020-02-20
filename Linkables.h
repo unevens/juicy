@@ -40,9 +40,6 @@ struct LinkableControlTable
   Colour backgroundColour = Colours::transparentBlack;
   Colour lineColour = Colours::white;
   bool drawHorizontalLines = true;
-  bool drawLeftVericalLine = true;
-  bool drawRightVericalLine = true;
-  int lineThickness = 2;
   float gap = 8.f;
 
   void paintTable(Graphics& g, int width, int height, bool hasLinked)
@@ -53,25 +50,16 @@ struct LinkableControlTable
 
     g.setColour(lineColour);
 
-    g.drawLine(0, 1, width, 1, lineThickness);
+    g.drawRect(0, 0, width, height);
 
     if (drawHorizontalLines) {
-      g.drawLine(0, rowHeight, width, rowHeight, lineThickness);
-      g.drawLine(0, 2 * rowHeight, width, 2 * rowHeight, lineThickness);
+      g.drawRect(0, 0, width, rowHeight);
+      g.drawRect(0, 0, width, 2 * rowHeight);
       if (hasLinked) {
-        g.drawLine(0, 3 * rowHeight, width, 3 * rowHeight, lineThickness);
+        g.drawRect(0, 0, width, 3 * rowHeight);
       }
     }
 
-    g.drawLine(0, height - 1, width, height - 1, lineThickness);
-
-    if (drawLeftVericalLine) {
-      g.drawLine(1, 0, 1, height, lineThickness);
-    }
-
-    if (drawRightVericalLine) {
-      g.drawLine(width - 1, 0, width - 1, height, lineThickness);
-    }
   }
 };
 

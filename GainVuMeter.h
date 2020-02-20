@@ -38,7 +38,8 @@ public:
 
   Colour backgroundColour = Colours::black;
   Colour internalColour = Colours::transparentBlack;
-  Colour labelColour = Colours::white;
+  Colour labelColour = Colours::lightgrey;
+  Colour lineColour = Colours::grey;
   
   float range;
 
