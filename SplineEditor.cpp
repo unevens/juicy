@@ -606,7 +606,6 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
   , linked(*this, apvts)
   , channelLabels(apvts, midSideParamID, false)
 {
-  setOpaque(false);
   enabled.getControl().setButtonText("Node is Active");
   linked.getControl().setButtonText("Node is Linked");
 
@@ -628,6 +627,7 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
 
   label.setFont(label.getFont().boldened());
 
+  setOpaque(false);
   setSize(360, 120);
 
   setNode(0);
@@ -679,9 +679,10 @@ SplineNodeEditor::paint(Graphics& g)
   int const width = 40 + 4 * std::floor(((float)getWidth() - 40.f) / 4.f);
   g.fillAll(tableSettings.backgroundColour);
   g.setColour(tableSettings.lineColour);
-  g.drawLine(1, 1, width - 1, 1);
-  g.drawLine(1, 1, 1, width / 4);
-  g.drawLine(width - 1, 1, width - 1, getHeight() / 4);
+  g.drawLine(1, 1, width - 1, 1, tableSettings.lineThickness);
+  g.drawLine(1, 1, 1, width / 4, tableSettings.lineThickness);
+  g.drawLine(
+    width - 1, 1, width - 1, getHeight() / 4, tableSettings.lineThickness);
 }
 
 void

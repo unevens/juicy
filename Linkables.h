@@ -42,7 +42,7 @@ struct LinkableControlTable
   bool drawHorizontalLines = true;
   bool drawLeftVericalLine = true;
   bool drawRightVericalLine = true;
-  float lineThickness = 1.f;
+  int lineThickness = 2;
   float gap = 8.f;
 
   void paintTable(Graphics& g, int width, int height, bool hasLinked)
@@ -53,15 +53,17 @@ struct LinkableControlTable
 
     g.setColour(lineColour);
 
+    g.drawLine(0, 1, width, 1, lineThickness);
+
     if (drawHorizontalLines) {
-      g.drawLine(0, 1, width, 1, lineThickness);
       g.drawLine(0, rowHeight, width, rowHeight, lineThickness);
       g.drawLine(0, 2 * rowHeight, width, 2 * rowHeight, lineThickness);
       if (hasLinked) {
         g.drawLine(0, 3 * rowHeight, width, 3 * rowHeight, lineThickness);
       }
-      g.drawLine(0, height - 1, width, height - 1, lineThickness);
     }
+
+    g.drawLine(0, height - 1, width, height - 1, lineThickness);
 
     if (drawLeftVericalLine) {
       g.drawLine(1, 0, 1, height, lineThickness);
@@ -107,10 +109,12 @@ public:
     , controls{ { { *this, apvts, channel0ParamID },
                   { *this, apvts, channel0ParamID } } }
   {
-    addAndMakeVisible(label);
     parameterChanged("", apvts.getParameter(linkParamID)->getValue());
     apvts.addParameterListener(linkParamID, this);
+
+    addAndMakeVisible(label);
     label.setJustificationType(Justification::centred);
+
     setOpaque(false);
     setSize(90, linked ? 120 : 90);
   }
