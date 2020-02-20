@@ -29,7 +29,7 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
 {
   if (waveShaperParameters) {
     waveShaperHolder.Initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
-    for (int n = 0; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES; ++n) {
+    for (int n = 1; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES; ++n) {
       auto spline = waveShaperHolder.GetSpline(n);
       spline->SetWet(1.f);
       spline->SetHighPassFrequency(0.f);
