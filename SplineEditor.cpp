@@ -17,20 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "SplineEditor.h"
 
-SplineEditor::SplineEditor(
-  SplineParameters& parameters,
-  AudioProcessorValueTreeState& apvts,
-  bool isWaveShaper,
-  LinkableParameter<WrappedBoolParameter>* symmetryParameter)
+SplineEditor::SplineEditor(SplineParameters& parameters,
+                           AudioProcessorValueTreeState& apvts,
+                           WaveShaperParameters* waveShaperParameters)
   : parameters(parameters)
   , spline(parameters, apvts, [this]() { OnSplineChange(); })
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
-  , isWaveShaper(isWaveShaper)
-  , symmetryParameter(symmetryParameter)
+  , waveShaperParameters(waveShaperParameters)
 {
-  if (isWaveShaper) {
+  if (waveShaperParameters) {
     waveShaperHolder.Initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
   }
   else {
@@ -144,14 +141,19 @@ SplineEditor::paint(Graphics& g)
   // curves
 
   if (redrawCurvesFlag) {
-    if (isWaveShaper) {
+    if (waveShaperParameters) {
+
       waveShaperDsp = parameters.updateSpline(waveShaperHolder);
-      if (symmetryParameter) {
-        for (int c = 0; c < 2; ++c) {
-          waveShaperDsp->SetIsSymmetric(symmetryParameter->get(c)->getValue() >=
-                                        0.5f);
-        }
+
+      for (int c = 0; c < 2; ++c) {
+        waveShaperDsp->SetIsSymmetric(
+          waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
+        waveShaperDsp->SetDc(waveShaperParameters->dc.get(c)->get(), c);
+        waveShaperDsp->SetWet(waveShaperParameters->dryWet.get(c)->get(), c);
+        waveShaperDsp->SetHighPassFrequency(
+          waveShaperParameters->dcCutoff.get(c)->get(), c);
       }
+
       waveShaperDsp->Reset();
       waveShaperDsp->ProcessBlock(inputBuffer, outputbuffer);
     }

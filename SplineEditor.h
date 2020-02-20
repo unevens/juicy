@@ -32,7 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES 17
 #endif // !MAX_SPLINE_EDITOR_NUM_NODES
 
-
 struct SplineAttachments
 {
   struct NodeAttachments
@@ -78,8 +77,7 @@ class SplineEditor
 public:
   SplineEditor(SplineParameters& parameters,
                AudioProcessorValueTreeState& apvts,
-               bool isWaveShaper = false,
-               LinkableParameter<WrappedBoolParameter>*symmetryParameter=nullptr);
+               WaveShaperParameters* waveShaperParameters = nullptr);
 
   void paint(Graphics&) override;
   void resized() override;
@@ -137,7 +135,6 @@ public:
 private:
   SplineParameters& parameters;
   SplineNodeEditor* nodeEditor = nullptr;
-  LinkableParameter<WrappedBoolParameter>* symmetryParameter;
 
   Point<float> getNodeCoord(int nodeIndex, int channel);
 
@@ -188,7 +185,7 @@ private:
   avec::SplineHolder<avec::Spline, Vec2d> splineHolder;
   avec::SplineInterface<Vec2d>* splineDsp = nullptr;
 
-  bool isWaveShaper;
+  WaveShaperParameters* waveShaperParameters;
   avec::SplineHolder<avec::WaveShaper, Vec2d> waveShaperHolder;
   avec::WaveShaperInterface<Vec2d>* waveShaperDsp = nullptr;
 

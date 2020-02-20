@@ -16,9 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
-#include "Attachments.h"
-#include "WrappedBoolParameter.h"
-#include "avec/dsp/Spline.hpp"
+#include "Linkables.h"
 #include <JuceHeader.h>
 #include <array>
 
@@ -108,4 +106,12 @@ struct SplineParameters
     }
     return spline;
   }
+};
+
+struct WaveShaperParameters
+{
+  LinkableParameter<AudioParameterFloat> dc;
+  LinkableParameter<AudioParameterFloat> dryWet;
+  LinkableParameter<AudioParameterFloat> dcCutoff;
+  LinkableParameter<WrappedBoolParameter> symmetry;
 };
