@@ -49,7 +49,7 @@ GainVuMeter::paint(Graphics& g)
   g.setColour(lineColour);
 
   std::function<void(int)> const drawReferenceLine = [&](int db) {
-    if (abs(db) > range) {
+    if (std::abs(db) > range) {
       return;
     }
 
@@ -57,7 +57,7 @@ GainVuMeter::paint(Graphics& g)
       0,
       getHeight(),
       (int)(halfHeight -
-            std::copysign(scaling(abs(db / range)), db / range) * halfHeight));
+            std::copysign(scaling(std::abs(db / range)), db / range) * halfHeight));
 
     g.setColour(lineColour);
     if (db > 0.f) {
@@ -70,7 +70,7 @@ GainVuMeter::paint(Graphics& g)
     int const textHeight = y + (db > 0.f ? 0 : -16);
 
     g.setColour(labelColour);
-    g.drawText((db > 0 ? "+" : "-") + String(abs(db)),
+    g.drawText((db > 0 ? "+" : "-") + String(std::abs(db)),
                Rectangle((int)dx, textHeight, (int)dx, 16),
                Justification::centred);
 
@@ -103,7 +103,7 @@ GainVuMeter::paint(Graphics& g)
     maxValue[c] = jmax(db, maxValue[c]);
 
     float const yNorm = jlimit(-1.f, 1.f, db / range);
-    float const y = std::copysign(scaling(abs(yNorm)), yNorm);
+    float const y = std::copysign(scaling(std::abs(yNorm)), yNorm);
 
     float left = c == 0 ? 0.f : 2.f * dx;
     if (y > 0.f) {
@@ -127,7 +127,7 @@ GainVuMeter::paint(Graphics& g)
     }
 
     g.setGradientFill(bottomGradient);
-    float const minY = scaling(abs(jmax(-1.f, minValue[c] / range)));
+    float const minY = scaling(std::abs(jmax(-1.f, minValue[c] / range)));
     float const minYCoord = halfHeight * (1.f + minY);
     g.drawLine(left, minYCoord, left + dx, minYCoord, 1);
 
