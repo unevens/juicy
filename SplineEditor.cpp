@@ -57,6 +57,10 @@ SplineEditor::paint(Graphics& g)
   ScopedNoDenormals noDenormals;
 
   auto const bounds = getLocalBounds().toFloat();
+  bool const isMouseInside = isMouseOver();
+  auto const mousePosition = getMouseXYRelative();
+
+  constexpr float lineThickness = 1;
 
   g.fillAll(backgroundColour);
   g.setFont(font);
@@ -148,6 +152,60 @@ SplineEditor::paint(Graphics& g)
     g.drawLine(0.f, y0, x0, y0);
   }
 
+  // nodes
+
+  bool const forceNodeDrawing = areaInWhichToDrawNodes.contains(mousePosition);
+
+  if (isMouseInside || forceNodeDrawing) {
+
+    auto const fillNode = [&](Point<float> centre, float diameter) {
+      g.drawEllipse(centre.x - diameter * 0.5f,
+                    centre.y - diameter * 0.5f,
+                    diameter,
+                    diameter,
+                    1.f);
+    };
+
+    for (auto& node : spline.nodes) {
+
+      for (int c = 1; c >= 0; --c) {
+        auto& params = node.parameters[c];
+
+        Point<float> const coord = { xToPixel(params.x->getValue()),
+                                     yToPixel(params.y->getValue()) };
+
+        if (bounds.contains(coord)) {
+
+          bool const isEnabled =
+            c == 0 ? node.enabled->getValue()
+                   : node.enabled->getValue() && !node.linked->getValue();
+
+          g.setColour(isEnabled ? nodeColours[c]
+                                : nodeColours[c].darker(0.5f).withAlpha(0.5f));
+
+          fillNode(coord, bigControlPointSize);
+
+          float const t = params.t->getValue();
+          float const dx = widgetOffset / sqrt(1.f + t * t);
+          float const dy = -dx * t;
+          auto const dt = Point<float>(dx, dy);
+          auto const ds = Point<float>(dy, -dx);
+
+          auto const leftTan = coord - dt;
+          auto const rightTan = coord + dt;
+          auto const smooth = coord - ds;
+
+          fillNode(leftTan, smallControlPointSize);
+          fillNode(rightTan, smallControlPointSize);
+          fillNode(smooth, smallControlPointSize);
+
+          g.drawLine(Line<float>(leftTan, rightTan), lineThickness);
+          g.drawLine(Line<float>(coord, smooth), lineThickness);
+        }
+      }
+    }
+  }
+
   // curves
 
   if (redrawCurvesFlag) {
@@ -189,8 +247,6 @@ SplineEditor::paint(Graphics& g)
     }
   }
 
-  constexpr float lineThickness = 1;
-
   for (int c = 1; c >= 0; --c) {
     Path path;
 
@@ -207,64 +263,6 @@ SplineEditor::paint(Graphics& g)
     }
     g.setColour(curveColours[c]);
     g.strokePath(path, PathStrokeType(lineThickness));
-  }
-
-  // get mouse position
-
-  bool const isMouseInside = isMouseOver();
-  auto const mousePosition = getMouseXYRelative();
-
-  // nodes
-
-  bool const forceNodeDrawing = areaInWhichToDrawNodes.contains(mousePosition);
-
-  if (isMouseInside || forceNodeDrawing) {
-
-    auto const fillNode = [&](Point<float> centre, float diameter) {
-      g.fillEllipse(centre.x - diameter * 0.5f,
-                    centre.y - diameter * 0.5f,
-                    diameter,
-                    diameter);
-    };
-
-    for (auto& node : spline.nodes) {
-
-      for (int c = 1; c >= 0; --c) {
-        auto& params = node.parameters[c];
-
-        Point<float> const coord = { xToPixel(params.x->getValue()),
-                                     yToPixel(params.y->getValue()) };
-
-        if (bounds.contains(coord)) {
-
-          bool const isEnabled =
-            c == 0 ? node.enabled->getValue()
-                   : node.enabled->getValue() && !node.linked->getValue();
-
-          g.setColour(isEnabled ? nodeColours[c]
-                                : nodeColours[c].darker(0.5f).withAlpha(0.5f));
-
-          fillNode(coord, bigControlPointSize);
-
-          float const t = params.t->getValue();
-          float const dx = widgetOffset / sqrt(1.f + t * t);
-          float const dy = -dx * t;
-          auto const dt = Point<float>(dx, dy);
-          auto const ds = Point<float>(dy, -dx);
-
-          auto const leftTan = coord - dt;
-          auto const rightTan = coord + dt;
-          auto const smooth = coord - ds;
-
-          fillNode(leftTan, smallControlPointSize);
-          fillNode(rightTan, smallControlPointSize);
-          fillNode(smooth, smallControlPointSize);
-
-          g.drawLine(Line<float>(leftTan, rightTan), lineThickness);
-          g.drawLine(Line<float>(coord, smooth), lineThickness);
-        }
-      }
-    }
   }
 
   // mouse coordinates
