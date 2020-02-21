@@ -159,7 +159,7 @@ private:
 };
 
 /**
- * The class FloatAttachment is almost the same as
+ * The class BoolAttachment is almost the same as
  * juce::AudioProcessorValueTreeState::ButtonAttachment, but lets you use your
  * own control instead of a Button. Actually it does not care what control you
  * use. It just takes a functor to call when the parameter changes.
