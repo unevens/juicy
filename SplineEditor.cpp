@@ -32,16 +32,16 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
   , waveShaperParameters(waveShaperParameters)
 {
   if (waveShaperParameters) {
-    waveShaperHolder.Initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
+    waveShaperHolder.initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
     for (int n = 1; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES; ++n) {
-      auto spline = waveShaperHolder.GetSpline(n);
-      spline->SetWet(1.f);
-      spline->SetDc(0.f);
-      spline->SetHighPassFrequency(0.f);
+      auto spline = waveShaperHolder.getSpline(n);
+      spline->setWet(1.f);
+      spline->setDc(0.f);
+      spline->setHighPassFrequency(0.f);
     }
   }
   else {
-    splineHolder.Initialize<JUICY_MAX_SPLINE_EDITOR_NUM_NODES>();
+    splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_NODES>();
   }
 
   setSize(400, 400);
@@ -141,7 +141,7 @@ SplineEditor::paint(Graphics& g)
     vuMeterBuffer[0][1] = vuMeter[1]->load();
     int const x0 = std::round(xToPixel(vuMeterBuffer[0][0]));
     int const x1 = std::round(xToPixel(vuMeterBuffer[0][1]));
-    splineDsp->ProcessBlock(vuMeterBuffer, vuMeterBuffer);
+    splineDsp->processBlock(vuMeterBuffer, vuMeterBuffer);
     int const y0 = std::round(yToPixel(vuMeterBuffer[0][0]));
     int const y1 = std::round(yToPixel(vuMeterBuffer[0][1]));
     g.setColour(vuMeterColours[1]);
@@ -218,16 +218,16 @@ SplineEditor::paint(Graphics& g)
       if (waveShaperDsp) {
 
         for (int c = 0; c < 2; ++c) {
-          waveShaperDsp->SetIsSymmetric(
+          waveShaperDsp->setIsSymmetric(
             waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
         }
 
-        waveShaperDsp->Reset();
-        waveShaperDsp->ProcessBlock(inputBuffer, outputBuffer);
+        waveShaperDsp->reset();
+        waveShaperDsp->processBlock(inputBuffer, outputBuffer);
       }
       else {
         std::copy(&inputBuffer(0),
-                  &inputBuffer(0) + inputBuffer.GetScalarSize(),
+                  &inputBuffer(0) + inputBuffer.getScalarSize(),
                   &outputBuffer(0));
       }
     }
@@ -236,12 +236,12 @@ SplineEditor::paint(Graphics& g)
       splineDsp = parameters.updateSpline(splineHolder);
 
       if (splineDsp) {
-        splineDsp->Reset();
-        splineDsp->ProcessBlock(inputBuffer, outputBuffer);
+        splineDsp->reset();
+        splineDsp->processBlock(inputBuffer, outputBuffer);
       }
       else {
         std::copy(&inputBuffer(0),
-                  &inputBuffer(0) + inputBuffer.GetScalarSize(),
+                  &inputBuffer(0) + inputBuffer.getScalarSize(),
                   &outputBuffer(0));
       }
     }
@@ -560,8 +560,8 @@ SplineEditor::yToPixelUnclamped(float y)
 void
 SplineEditor::setupSplineInputBuffer()
 {
-  inputBuffer.SetNumSamples(getWidth());
-  outputBuffer.SetNumSamples(getWidth());
+  inputBuffer.setNumSamples(getWidth());
+  outputBuffer.setNumSamples(getWidth());
 
   for (int i = 0; i < getWidth(); ++i) {
     inputBuffer[i] = pixelToX(i);
@@ -607,19 +607,19 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
   auto const makeNodeAttachments =
     [&](SplineParameters::LinkableNodeParameters node, int channel) {
       return SplineAttachments::NodeAttachments{
-        FloatAttachment::New(apvts,
+        FloatAttachment::make(apvts,
                              node.parameters[channel].x->paramID,
                              onChange,
                              parameters.rangeX),
-        FloatAttachment::New(apvts,
+        FloatAttachment::make(apvts,
                              node.parameters[channel].y->paramID,
                              onChange,
                              parameters.rangeY),
-        FloatAttachment::New(apvts,
+        FloatAttachment::make(apvts,
                              node.parameters[channel].t->paramID,
                              onChange,
                              parameters.rangeTan),
-        FloatAttachment::New(apvts,
+        FloatAttachment::make(apvts,
                              node.parameters[channel].s->paramID,
                              onChange,
                              NormalisableRange<float>{ 0.f, 1.f, 0.01f })
@@ -630,13 +630,13 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
     nodes.push_back(SplineAttachments::LinkableNodeAttachments{
       std::array<SplineAttachments::NodeAttachments, 2>{
         { makeNodeAttachments(node, 0), makeNodeAttachments(node, 1) } },
-      BoolAttachment::New(apvts, node.enabled.getID(), onChange),
-      BoolAttachment::New(apvts, node.linked.getID(), onChange) });
+      BoolAttachment::make(apvts, node.enabled.getID(), onChange),
+      BoolAttachment::make(apvts, node.linked.getID(), onChange) });
   }
 
   if (waveShaperParameters) {
     for (int c = 0; c < 2; ++c) {
-      symmetry[c] = BoolAttachment::New(
+      symmetry[c] = BoolAttachment::make(
         apvts, waveShaperParameters->symmetry.getID(c), onChange);
     }
   }

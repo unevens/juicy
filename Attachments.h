@@ -114,7 +114,7 @@ public:
   }
 
   template<typename... T>
-  static std::unique_ptr<FloatAttachment> New(T&&... all)
+  static std::unique_ptr<FloatAttachment> make(T&&... all)
   {
     return std::unique_ptr<FloatAttachment>(
       new FloatAttachment(std::forward<T>(all)...));
@@ -179,7 +179,7 @@ public:
   }
 
   template<typename... T>
-  static std::unique_ptr<BoolAttachment> New(T&&... all)
+  static std::unique_ptr<BoolAttachment> make(T&&... all)
   {
     return std::unique_ptr<BoolAttachment>(
       new BoolAttachment(std::forward<T>(all)...));

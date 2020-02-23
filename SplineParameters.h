@@ -86,11 +86,11 @@ struct SplineParameters
     SplineHolderClass& splines)
   {
     int const numNodes = getNumActiveNodes();
-    auto spline = splines.GetSpline(numNodes);
+    auto spline = splines.getSpline(numNodes);
     if (!spline) {
       return nullptr;
     }
-    auto splineNodes = spline->GetNodes();
+    auto splineNodes = spline->getNodes();
     int n = 0;
     for (auto& node : nodes) {
       if (node.IsEnabled()) {
