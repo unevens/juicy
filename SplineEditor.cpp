@@ -448,24 +448,31 @@ SplineEditor::mouseUp(MouseEvent const& event)
 void
 SplineEditor::mouseDoubleClick(MouseEvent const& event)
 {
-  float minDistance = getWidth() + getHeight();
-  int node = -1;
-  int channel = -1;
-  Point<float> nodeCoord;
+  float minDistances[2] = { getWidth() + getHeight(),
+                            getWidth() + getHeight() };
+  int nodes[2] = { -1, -1 };
+  Point<float> nodeCoord[2];
 
   for (int c = 0; c < 2; ++c) {
     for (int n = 0; n < spline.nodes.size(); ++n) {
 
-      nodeCoord = getNodeCoord(n, c);
-      float distance = nodeCoord.getDistanceFrom(event.position);
+      nodeCoord[c] = getNodeCoord(n, c);
+      float distance = nodeCoord[c].getDistanceFrom(event.position);
 
-      if (distance < minDistance) {
-        minDistance = distance;
-        node = n;
-        channel = c;
+      if (distance < minDistances[c]) {
+        minDistances[c] = distance;
+        nodes[c] = n;
       }
     }
   }
+
+  int interactingChannel = getChannel(event);
+
+  int channel =
+    interactingChannel == 1 ? 1 : (minDistances[0] <= minDistances[1] ? 0 : 1);
+
+  auto minDistance = minDistances[channel];
+  int node = nodes[channel];
 
   if (node == -1) {
     return;
