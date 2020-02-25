@@ -448,8 +448,8 @@ SplineEditor::mouseUp(MouseEvent const& event)
 void
 SplineEditor::mouseDoubleClick(MouseEvent const& event)
 {
-  float minDistances[2] = { getWidth() + getHeight(),
-                            getWidth() + getHeight() };
+  float maxDistance = getWidth() + getHeight();
+  float minDistances[2] = { maxDistance, maxDistance };
   int nodes[2] = { -1, -1 };
   Point<float> nodeCoord[2];
 
