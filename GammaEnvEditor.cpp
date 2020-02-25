@@ -34,13 +34,15 @@ GammaEnvEditor::GammaEnvEditor(AudioProcessorValueTreeState& apvts,
   addAndMakeVisible(metric);
   addAndMakeVisible(channelLabels);
 
-  setSize(WIDTH, 120.f);
+  setSize(fullSizeWidth, 160);
   setOpaque(false);
 }
 
 void
 GammaEnvEditor::resized()
 {
+  float widthFactor = (getWidth()) / (float)(fullSizeWidth);
+
   int left = 0;
 
   auto const resize = [&](auto& component, int width) {
@@ -49,13 +51,13 @@ GammaEnvEditor::resized()
     left += width - 1;
   };
 
-  resize(channelLabels, 50);
+  resize(channelLabels, 50 * widthFactor);
 
-  resize(metric, 90);
-  resize(attack, 140);
-  resize(release, 140);
-  resize(attackDelay, 140);
-  resize(releaseDelay, 140);
+  resize(metric, 120 * widthFactor);
+  resize(attack, 140 * widthFactor);
+  resize(release, 140 * widthFactor);
+  resize(attackDelay, 140 * widthFactor);
+  resize(releaseDelay, 140 * widthFactor);
 }
 
 void

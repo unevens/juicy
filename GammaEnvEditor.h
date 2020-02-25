@@ -33,7 +33,7 @@ struct GammaEnvParameters
 class GammaEnvEditor : public Component
 {
 public:
-  static constexpr int WIDTH = 140 * 4 + 90 + 50;
+  static constexpr int fullSizeWidth = 725;
 
   GammaEnvEditor(AudioProcessorValueTreeState& apvts,
                  GammaEnvParameters& parameters,

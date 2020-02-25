@@ -608,21 +608,21 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
     [&](SplineParameters::LinkableNodeParameters node, int channel) {
       return SplineAttachments::NodeAttachments{
         FloatAttachment::make(apvts,
-                             node.parameters[channel].x->paramID,
-                             onChange,
-                             parameters.rangeX),
+                              node.parameters[channel].x->paramID,
+                              onChange,
+                              parameters.rangeX),
         FloatAttachment::make(apvts,
-                             node.parameters[channel].y->paramID,
-                             onChange,
-                             parameters.rangeY),
+                              node.parameters[channel].y->paramID,
+                              onChange,
+                              parameters.rangeY),
         FloatAttachment::make(apvts,
-                             node.parameters[channel].t->paramID,
-                             onChange,
-                             parameters.rangeTan),
+                              node.parameters[channel].t->paramID,
+                              onChange,
+                              parameters.rangeTan),
         FloatAttachment::make(apvts,
-                             node.parameters[channel].s->paramID,
-                             onChange,
-                             NormalisableRange<float>{ 0.f, 1.f, 0.01f })
+                              node.parameters[channel].s->paramID,
+                              onChange,
+                              NormalisableRange<float>{ 0.f, 1.f, 0.01f })
       };
     };
 
@@ -697,10 +697,13 @@ SplineNodeEditor::resized()
 {
   int const rowHeight = getHeight() / 4;
 
+  float const widthFactor = getWidth() / 598.f;
+  int const selectedWidth = (2.f / 5.f) * getWidth();
+
   label.setTopLeftPosition(0, 0);
-  label.setSize(116, rowHeight);
-  selectedNode.setTopLeftPosition(116, rowHeight * 0.1);
-  selectedNode.setSize(60, rowHeight * 0.8);
+  label.setSize(130 * widthFactor, rowHeight);
+  selectedNode.setTopLeftPosition(130 * widthFactor, rowHeight * 0.1);
+  selectedNode.setSize(60.f * widthFactor, rowHeight * 0.8);
 
   Grid grid;
   using Track = Grid::TrackInfo;
@@ -710,7 +713,8 @@ SplineNodeEditor::resized()
   grid.items = { GridItem(enabled.getControl()),
                  GridItem(linked.getControl()) };
 
-  grid.performLayout({ 220, 0, getWidth() - 220, rowHeight });
+  int const offset = 220 * widthFactor;
+  grid.performLayout({ offset, 0, getWidth() - offset, rowHeight });
 
   int const secondRow = rowHeight;
   int left = 0;
@@ -721,13 +725,13 @@ SplineNodeEditor::resized()
     left += width - 1;
   };
 
-  resize(channelLabels, 50);
+  resize(channelLabels, 50 * widthFactor);
 
   if (!x || !y || !s || !t) {
     return;
   }
 
-  int width = std::floor(((float)getWidth() - 45.f) / 4.f);
+  int width = std::floor(((float)getWidth() - 50 * widthFactor + 4.f) / 4.f);
 
   resize(*x, width);
   resize(*y, width);

@@ -21,10 +21,14 @@ class SimpleLookAndFeel : public LookAndFeel_V4
 public:
   SimpleLookAndFeel();
 
-  int simpleFontSize = 16;
+  int simpleFontSize = 18;
   int simpleSliderLabelFontSize = 15;
   Font::FontStyleFlags simpleFontStyle = Font::bold;
-  
+
+  int simpleToggleTickWidth = 18;
+
+  int simpleRotarySliderOffset = 10;
+
   Colour frontColour = Colours::white;
   Colour sliderFillColour = Colours::blue;
   Colour sliderOutlineColour = Colours::blueviolet;
@@ -39,9 +43,18 @@ public:
 
   Font getLabelFont(Label& label) override;
 
-
   void drawToggleButton(Graphics& g,
                         ToggleButton& button,
                         bool shouldDrawButtonAsHighlighted,
                         bool shouldDrawButtonAsDown) override;
+
+  void drawRotarySlider(Graphics& g,
+                        int x,
+                        int y,
+                        int width,
+                        int height,
+                        float sliderPos,
+                        const float rotaryStartAngle,
+                        const float rotaryEndAngle,
+                        Slider& slider) override;
 };
