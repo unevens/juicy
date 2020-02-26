@@ -40,7 +40,7 @@ GainVuMeter::paint(Graphics& g)
   float const dx = getWidth() / 3.f;
   float const halfHeight = getHeight() * 0.5f;
 
-  g.setFont(12);
+  g.setFont(fontSize);
 
   g.fillAll(internalColour);
 
@@ -53,11 +53,12 @@ GainVuMeter::paint(Graphics& g)
       return;
     }
 
-    int const y = jlimit(
-      0,
-      getHeight(),
-      (int)(halfHeight -
-            std::copysign(scaling(std::abs(db / range)), db / range) * halfHeight));
+    int const y =
+      jlimit(0,
+             getHeight(),
+             (int)(halfHeight -
+                   std::copysign(scaling(std::abs(db / range)), db / range) *
+                     halfHeight));
 
     g.setColour(lineColour);
     if (db > 0.f) {

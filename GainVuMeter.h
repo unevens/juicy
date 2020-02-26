@@ -40,7 +40,9 @@ public:
   Colour internalColour = Colours::transparentBlack;
   Colour labelColour = Colours::lightgrey;
   Colour lineColour = Colours::grey;
-  
+
+  int fontSize = 10;
+
   float range;
 
   void setColours(Colour lowColour, Colour highColour);
