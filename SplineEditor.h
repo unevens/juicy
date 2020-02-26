@@ -51,7 +51,7 @@ struct SplineAttachments
 
   std::vector<LinkableNodeAttachments> nodes;
 
-  std::array<std::unique_ptr<BoolAttachment>,2> symmetry;
+  std::array<std::unique_ptr<BoolAttachment>, 2> symmetry;
 
   SplineAttachments(SplineParameters& parameters,
                     AudioProcessorValueTreeState& apvts,
@@ -141,7 +141,13 @@ private:
 
   Point<float> getNodeCoord(int nodeIndex, int channel);
 
-  int getChannel(MouseEvent const& event);
+  struct NodeSelectionResult
+  {
+    int nodeIndex;
+    float distanceBwtweenNodeAndMouse;
+  };
+
+  NodeSelectionResult selectNode(MouseEvent const& event);
 
   void setupZoom(Point<float> fixedPoint, Point<float> newZoom);
 

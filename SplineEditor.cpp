@@ -287,34 +287,50 @@ SplineEditor::resized()
   setupZoom({ 0.5f * getWidth(), 0.5f * getHeight() }, { 1.f, 1.f });
 }
 
-void
-SplineEditor::mouseDown(MouseEvent const& event)
+SplineEditor::NodeSelectionResult
+SplineEditor::selectNode(MouseEvent const& event)
 {
-  interactingChannel = getChannel(event);
+  float maxDistance = getWidth() + getHeight();
+  float minDistances[2] = { maxDistance, maxDistance };
+  int nodes[2] = { -1, -1 };
+  Point<float> nodeCoords[2];
 
-  float minDistance = getWidth() + getHeight();
-  int nearestNodeIndex = -1;
-  Point<float> nearestNodeCoord;
+  for (int c = 0; c < 2; ++c) {
+    for (int n = 0; n < spline.nodes.size(); ++n) {
 
-  for (int n = 0; n < spline.nodes.size(); ++n) {
+      nodeCoords[c] = getNodeCoord(n, c);
+      float distance = nodeCoords[c].getDistanceFrom(event.position);
 
-    auto nodeCoord = getNodeCoord(n, interactingChannel);
-    float distance = nodeCoord.getDistanceFrom(event.position);
-
-    if (distance < minDistance) {
-      minDistance = distance;
-      nearestNodeIndex = n;
-      nearestNodeCoord = nodeCoord;
+      if (distance < minDistances[c]) {
+        minDistances[c] = distance;
+        nodes[c] = n;
+      }
     }
   }
 
-  if (nearestNodeIndex == -1) {
+  interactingChannel =
+    (event.mods.isAltDown() || event.mods.isRightButtonDown()) ? 1 : 0;
+
+  interactingChannel =
+    interactingChannel == 1 ? 1 : (minDistances[0] <= minDistances[1] ? 0 : 1);
+
+  return { nodes[interactingChannel], minDistances[interactingChannel] };
+}
+
+void
+SplineEditor::mouseDown(MouseEvent const& event)
+{
+  auto [node, minDistance] = selectNode(event);
+
+  if (node == -1) {
     interaction = InteractionType::Movement;
     prevOffset = offset;
     return;
   }
 
-  auto& params = spline.nodes[nearestNodeIndex].parameters[interactingChannel];
+  Point<float> nodeCoord = getNodeCoord(node, interactingChannel);
+
+  auto& params = spline.nodes[node].parameters[interactingChannel];
 
   float const radius = 0.5f * widgetOffset;
 
@@ -332,19 +348,19 @@ SplineEditor::mouseDown(MouseEvent const& event)
     float const dy = -dx * t;
     auto const dt = Point<float>(dx, dy);
 
-    if (event.position.getDistanceFrom(nearestNodeCoord + dt) <= radius) {
+    if (event.position.getDistanceFrom(nodeCoord + dt) <= radius) {
       interaction = InteractionType::RightTangent;
       interactionBuffer = params.t->getValue();
       params.t->dragStarted();
       hit = true;
     }
-    else if (event.position.getDistanceFrom(nearestNodeCoord - dt) <= radius) {
+    else if (event.position.getDistanceFrom(nodeCoord - dt) <= radius) {
       interaction = InteractionType::LeftTangent;
       interactionBuffer = params.t->getValue();
       params.t->dragStarted();
       hit = true;
     }
-    else if (event.position.getDistanceFrom(nearestNodeCoord -
+    else if (event.position.getDistanceFrom(nodeCoord -
                                             Point<float>(dy, -dx)) <= radius) {
       interaction = InteractionType::Smoothing;
       interactionBuffer = params.s->getValue();
@@ -358,7 +374,7 @@ SplineEditor::mouseDown(MouseEvent const& event)
   }
 
   if (hit) {
-    selectedNode = nearestNodeIndex;
+    selectedNode = node;
     if (nodeEditor) {
       nodeEditor->setSelectedNode(selectedNode);
     }
@@ -448,31 +464,8 @@ SplineEditor::mouseUp(MouseEvent const& event)
 void
 SplineEditor::mouseDoubleClick(MouseEvent const& event)
 {
-  float maxDistance = getWidth() + getHeight();
-  float minDistances[2] = { maxDistance, maxDistance };
-  int nodes[2] = { -1, -1 };
-  Point<float> nodeCoord[2];
+  auto [node, minDistance] = selectNode(event);
 
-  for (int c = 0; c < 2; ++c) {
-    for (int n = 0; n < spline.nodes.size(); ++n) {
-
-      nodeCoord[c] = getNodeCoord(n, c);
-      float distance = nodeCoord[c].getDistanceFrom(event.position);
-
-      if (distance < minDistances[c]) {
-        minDistances[c] = distance;
-        nodes[c] = n;
-      }
-    }
-  }
-
-  int interactingChannel = getChannel(event);
-
-  int channel =
-    interactingChannel == 1 ? 1 : (minDistances[0] <= minDistances[1] ? 0 : 1);
-
-  auto minDistance = minDistances[channel];
-  int node = nodes[channel];
 
   if (node == -1) {
     return;
@@ -482,7 +475,7 @@ SplineEditor::mouseDoubleClick(MouseEvent const& event)
     return;
   }
 
-  if (channel == 0) {
+  if (interactingChannel == 0) {
     spline.nodes[node].enabled->invertValueFromGui();
   }
   else {
@@ -575,12 +568,6 @@ SplineEditor::setupSplineInputBuffer()
   }
 
   redrawCurvesFlag = true;
-}
-
-int
-SplineEditor::getChannel(MouseEvent const& event)
-{
-  return (event.mods.isAltDown() || event.mods.isRightButtonDown()) ? 1 : 0;
 }
 
 void
