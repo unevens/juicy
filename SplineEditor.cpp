@@ -304,7 +304,8 @@ SplineEditor::paint(Graphics& g)
     float const x = pixelToX(mousePosition.x);
     float const y = pixelToY(mousePosition.y);
 
-    String const text = "x=" + String(x, 2) + ", y=" + String(y, 2);
+    String const text =
+      "x=" + String(x, 2) + xSuffix + ", y=" + String(y, 2) + ySuffix;
 
     g.setColour(mousePositionColour);
     g.drawText(text,
@@ -776,9 +777,9 @@ SplineNodeEditor::paint(Graphics& g)
 }
 
 void
-SplineNodeEditor::setSelectedNode(int newNodeIndex)
+SplineNodeEditor::setSelectedNode(int newNodeIndex, bool forceUpdate)
 {
-  setNode(newNodeIndex);
+  setNode(newNodeIndex, forceUpdate);
   selectedNode.setSelectedId(newNodeIndex + 1, sendNotification);
 }
 
@@ -794,9 +795,9 @@ SplineNodeEditor::setTableSettings(LinkableControlTable tableSettings)
 }
 
 void
-SplineNodeEditor::setNode(int newNodeIndex)
+SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
 {
-  if (nodeIndex == newNodeIndex) {
+  if (!forceUpdate && nodeIndex == newNodeIndex) {
     return;
   }
 
@@ -868,6 +869,17 @@ SplineNodeEditor::setNode(int newNodeIndex)
 
   addAndMakeVisible(*s);
 
+  if (splineEditor) {
+    for (int c = 0; c < 2; ++c) {
+      x->getControl(c).setTextValueSuffix(splineEditor->xSuffix);
+      y->getControl(c).setTextValueSuffix(splineEditor->ySuffix);
+      if (splineEditor->ySuffix != splineEditor->xSuffix) {
+        t->getControl(c).setTextValueSuffix(splineEditor->ySuffix + "/" +
+                                            splineEditor->xSuffix);
+      }
+    }
+  }
+
   setTableSettings(tableSettings);
 
   resized();
@@ -880,5 +892,5 @@ AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
 {
   splineEditor.nodeEditor = &nodeEditor;
   nodeEditor.splineEditor = &splineEditor;
-  nodeEditor.setSelectedNode(selectedNode);
+  nodeEditor.setSelectedNode(selectedNode, true);
 }

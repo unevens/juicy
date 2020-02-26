@@ -33,6 +33,13 @@ GammaEnvEditor::GammaEnvEditor(AudioProcessorValueTreeState& apvts,
   addAndMakeVisible(attackDelay);
   addAndMakeVisible(metric);
   addAndMakeVisible(channelLabels);
+  
+  for (int c = 0; c < 2; ++c) {
+    attack.getControl(c).setTextValueSuffix("ms");
+    attackDelay.getControl(c).setTextValueSuffix("%");
+    release.getControl(c).setTextValueSuffix("ms");
+    releaseDelay.getControl(c).setTextValueSuffix("%");
+  }
 
   setSize(fullSizeWidth, 160);
   setOpaque(false);

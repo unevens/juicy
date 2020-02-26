@@ -140,6 +140,10 @@ public:
 
   float wheelToZoomScaleFactor = 0.25f;
 
+  String xSuffix = "";
+
+  String ySuffix = "";
+
 private:
   SplineParameters& parameters;
   SplineNodeEditor* nodeEditor = nullptr;
@@ -228,12 +232,12 @@ public:
 
   void paint(Graphics& g) override;
 
-  void setSelectedNode(int newNodeIndex);
+  void setSelectedNode(int newNodeIndex, bool forceUpdate = false);
 
   void setTableSettings(LinkableControlTable tableSettings);
 
 private:
-  void setNode(int newNodeIndex);
+  void setNode(int newNodeIndex, bool forceUpdate = false);
 
   void timerCallback() override { repaint(); }
 
