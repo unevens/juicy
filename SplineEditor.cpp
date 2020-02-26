@@ -729,7 +729,7 @@ SplineNodeEditor::resized()
   label.setTopLeftPosition(0, 0);
   label.setSize(130 * widthFactor, rowHeight);
   selectedNode.setTopLeftPosition(130 * widthFactor, rowHeight * 0.1);
-  selectedNode.setSize(60.f * widthFactor, rowHeight * 0.8);
+  selectedNode.setSize(60, rowHeight * 0.8);
 
   Grid grid;
   using Track = Grid::TrackInfo;
@@ -739,7 +739,7 @@ SplineNodeEditor::resized()
   grid.items = { GridItem(enabled.getControl()),
                  GridItem(linked.getControl()) };
 
-  int const offset = 220 * widthFactor;
+  int const offset = 130 * widthFactor + 60 + 30 * widthFactor;
   grid.performLayout({ offset, 0, getWidth() - offset, rowHeight });
 
   int const secondRow = rowHeight;
