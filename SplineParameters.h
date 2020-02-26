@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Linkables.h"
 #include <JuceHeader.h>
 #include <array>
+#include <functional>
 
 struct SplineParameters
 {
@@ -73,7 +74,8 @@ struct SplineParameters
     int numNodes,
     NormalisableRange<float> rangeX,
     NormalisableRange<float> rangeY,
-    NormalisableRange<float> rangeTan);
+    NormalisableRange<float> rangeTan,
+    std::function<bool(int)> isNodeActive = [](int) { return true; });
 
   SplineParameters(std::vector<AudioParameterFloat*> parameters,
                    int numNodes,

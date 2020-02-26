@@ -67,7 +67,8 @@ SplineParameters::SplineParameters(
   int numNodes,
   NormalisableRange<float> rangeX,
   NormalisableRange<float> rangeY,
-  NormalisableRange<float> rangeTan)
+  NormalisableRange<float> rangeTan,
+  std::function<bool(int)> isNodeActive)
   : rangeX(rangeX)
   , rangeY(rangeY)
   , rangeTan(rangeTan)
@@ -118,7 +119,7 @@ SplineParameters::SplineParameters(
     // host
 
     auto enabled =
-      createBoolParameter(splinePrefix + "enabled" + postfix, true);
+      createBoolParameter(splinePrefix + "enabled" + postfix, isNodeActive(i));
     auto linked = createBoolParameter(splinePrefix + "linked" + postfix, true);
     auto ch0 = createNodeParameters(splinePrefix, postfix + "_ch0", i);
     auto ch1 = createNodeParameters(splinePrefix, postfix + "_ch1", i);
