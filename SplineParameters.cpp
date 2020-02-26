@@ -90,31 +90,43 @@ SplineParameters::SplineParameters(
     return a + (b - a) * alpha;
   };
 
-  auto const createNodeParameters = [&](String prefix, int i) {
+  auto const createNodeParameters = [&](String prefix, String postfix, int i) {
     float alpha = (i + 1) / (float)(numNodes + 1);
 
     return NodeParameters{
 
-      createFloatParameter(prefix + "x", rangeX.convertFrom0to1(alpha), rangeX),
+      createFloatParameter(
+        prefix + "X" + postfix, rangeX.convertFrom0to1(alpha), rangeX),
 
-      createFloatParameter(prefix + "y", rangeY.convertFrom0to1(alpha), rangeY),
+      createFloatParameter(
+        prefix + "Y" + postfix, rangeY.convertFrom0to1(alpha), rangeY),
 
-      createFloatParameter(prefix + "tangent",
+      createFloatParameter(prefix + "Tangent" + postfix,
                            (rangeY.end - rangeY.start) /
                              (rangeX.end - rangeX.start),
                            rangeTan),
 
-      createFloatParameter(prefix + "smoothness", 1.0, { 0.0, 1.0, 0.01 })
+      createFloatParameter(
+        prefix + "Smoothness" + postfix, 1.0, { 0.0, 1.0, 0.01 })
     };
   };
 
   auto const createLinkableNodeParameters = [&](int i) {
-    String prefix = splinePrefix + "_node_" + std::to_string(i + 1) + "_";
+    String postfix = "_n" + std::to_string(i + 1);
+
+    // parameters are constructed in the order in which they will appear to the
+    // host
+
+    auto enabled =
+      createBoolParameter(splinePrefix + "enabled" + postfix, true);
+    auto linked = createBoolParameter(splinePrefix + "linked" + postfix, true);
+    auto ch0 = createNodeParameters(splinePrefix, postfix + "_ch0", i);
+    auto ch1 = createNodeParameters(splinePrefix, postfix + "_ch1", i);
+
+    // and stored in their struct
+
     return LinkableNodeParameters{
-      createNodeParameters(prefix + "_ch0", i),
-      createNodeParameters(prefix + "_ch1", i),
-      createBoolParameter(prefix + "_enabled", true),
-      createBoolParameter(prefix + "_linked", true)
+      std::move(ch0), std::move(ch1), std::move(enabled), std::move(linked)
     };
   };
 
