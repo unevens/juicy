@@ -236,6 +236,9 @@ public:
 
   void setTableSettings(LinkableControlTable tableSettings);
 
+  String xLabel = "X";
+  String yLabel = "Y";
+
 private:
   void setNode(int newNodeIndex, bool forceUpdate = false);
 

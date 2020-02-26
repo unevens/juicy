@@ -819,7 +819,7 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
 
   x = std::make_unique<LinkableControl<AttachedSlider>>(
     apvts,
-    "x",
+    xLabel,
     linkedParamID,
     node.parameters[0].x->paramID,
     node.parameters[1].x->paramID,
@@ -833,7 +833,7 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
 
   y = std::make_unique<LinkableControl<AttachedSlider>>(
     apvts,
-    "y",
+    yLabel,
     linkedParamID,
     node.parameters[0].y->paramID,
     node.parameters[1].y->paramID,
