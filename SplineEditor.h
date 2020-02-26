@@ -123,6 +123,11 @@ public:
 
   Colour mousePositionColour = Colours::white;
 
+  std::array<Colour, 2> haloColours = {
+    { Colours::lightseagreen.withAlpha(0.6f),
+      Colours::lightcoral.withAlpha(0.6f) }
+  };
+
   std::array<Colour, 2> curveColours = { { Colours::blue, Colours::red } };
 
   std::array<Colour, 2> nodeColours = { { Colours::steelblue,

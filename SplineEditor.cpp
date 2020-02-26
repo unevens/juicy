@@ -166,6 +166,38 @@ SplineEditor::paint(Graphics& g)
                     1.f);
     };
 
+    // halo around selcted nodes
+
+    auto const fillHalo = [&](int channel) {
+      auto const coord = getNodeCoord(selectedNode, channel);
+
+      auto const& node = spline.nodes[selectedNode];
+
+      bool const isEnabled =
+        channel == 0 ? node.enabled->getValue()
+                     : node.enabled->getValue() && !node.linked->getValue();
+
+      auto const diameter = isEnabled ? 2.f * widgetOffset : widgetOffset;
+
+      g.setGradientFill(ColourGradient(haloColours[channel],
+                                       coord.x,
+                                       coord.y,
+                                       Colours::transparentBlack,
+                                       coord.x + diameter * 0.5f,
+                                       coord.y,
+                                       true));
+
+      g.fillEllipse(coord.x - diameter * 0.5f,
+                    coord.y - diameter * 0.5f,
+                    diameter,
+                    diameter);
+    };
+
+    fillHalo(0);
+    fillHalo(1);
+
+    // nodes
+
     for (auto& node : spline.nodes) {
 
       for (int c = 1; c >= 0; --c) {
@@ -465,7 +497,6 @@ void
 SplineEditor::mouseDoubleClick(MouseEvent const& event)
 {
   auto [node, minDistance] = selectNode(event);
-
 
   if (node == -1) {
     return;
