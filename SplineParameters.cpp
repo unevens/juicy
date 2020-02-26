@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cassert>
 
 bool
-SplineParameters::LinkableNodeParameters::NeedsReset()
+SplineParameters::LinkableNodeParameters::needsReset()
 {
   bool const isEnabled = IsEnabled();
   bool const isLinked = IsLinked();
@@ -30,7 +30,7 @@ SplineParameters::LinkableNodeParameters::NeedsReset()
 }
 
 SplineParameters::NodeParameters&
-SplineParameters::LinkableNodeParameters::GetActiveParameters(int channel)
+SplineParameters::LinkableNodeParameters::getActiveParameters(int channel)
 {
   if (IsLinked()) {
     return parameters[0];
@@ -54,7 +54,7 @@ bool
 SplineParameters::needsReset()
 {
   for (auto& node : nodes) {
-    if (node.NeedsReset()) {
+    if (node.needsReset()) {
       return true;
     }
   }

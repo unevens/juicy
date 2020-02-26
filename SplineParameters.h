@@ -52,9 +52,9 @@ struct SplineParameters
     bool IsEnabled() { return enabled.getValue(); };
     bool IsLinked() { return linked.getValue(); };
 
-    bool NeedsReset();
+    bool needsReset();
 
-    NodeParameters& GetActiveParameters(int channel);
+    NodeParameters& getActiveParameters(int channel);
   };
 
   std::vector<LinkableNodeParameters> nodes;
@@ -95,7 +95,7 @@ struct SplineParameters
     for (auto& node : nodes) {
       if (node.IsEnabled()) {
         for (int c = 0; c < 2; ++c) {
-          auto& params = node.GetActiveParameters(c);
+          auto& params = node.getActiveParameters(c);
           splineNodes[n].target.x[c] = params.x->get();
           splineNodes[n].target.y[c] = params.y->get();
           splineNodes[n].target.t[c] = params.t->get();
