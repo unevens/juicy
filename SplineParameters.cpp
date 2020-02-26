@@ -109,7 +109,7 @@ SplineParameters::SplineParameters(
   };
 
   auto const createLinkableNodeParameters = [&](int i) {
-    String prefix = splinePrefix + "_node_" + std::to_string(i) + "_";
+    String prefix = splinePrefix + "_node_" + std::to_string(i + 1) + "_";
     return LinkableNodeParameters{
       createNodeParameters(prefix + "_ch0", i),
       createNodeParameters(prefix + "_ch1", i),
