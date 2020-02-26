@@ -224,10 +224,14 @@ public:
   {
     this->paramIDs[0] = channel0ParamID;
     this->paramIDs[1] = channel1ParamID;
+
     this->controls[0] =
       AttachedComboBox(*this, apvts, channel0ParamID, choices);
+
     this->controls[1] =
       AttachedComboBox(*this, apvts, channel0ParamID, choices);
+
+    parameterChanged("", *apvts.getRawParameterValue(linkParamID));
   }
 
   template<class ParameterClass>
