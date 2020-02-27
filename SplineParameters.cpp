@@ -113,7 +113,7 @@ SplineParameters::SplineParameters(
   };
 
   auto const createLinkableKnotParameters = [&](int i) {
-    String postfix = "_n" + std::to_string(i + 1);
+    String postfix = "_k" + std::to_string(i + 1);
 
     // parameters are constructed in the order in which they will appear to the
     // host
