@@ -41,7 +41,7 @@ SplineParameters::LinkableKnotParameters::getActiveParameters(int channel)
 int
 SplineParameters::getNumActiveKnots()
 {
-  int numKnots = 0;
+  int numKnots = fixedKnots.size();
   for (auto& knot : knots) {
     if (knot.IsEnabled()) {
       ++numKnots;
@@ -68,10 +68,12 @@ SplineParameters::SplineParameters(
   NormalisableRange<float> rangeX,
   NormalisableRange<float> rangeY,
   NormalisableRange<float> rangeTan,
-  std::function<bool(int)> isKnotActive)
+  std::function<bool(int)> isKnotActive,
+  std::vector<KnotData> fixedKnots)
   : rangeX(rangeX)
   , rangeY(rangeY)
   , rangeTan(rangeTan)
+  , fixedKnots(fixedKnots)
 {
   auto const createFloatParameter =
     [&](String name, float value, NormalisableRange<float> range) {
@@ -142,10 +144,12 @@ SplineParameters::SplineParameters(std::vector<AudioParameterFloat*> parameters,
                                    int numKnots,
                                    NormalisableRange<float> rangeX,
                                    NormalisableRange<float> rangeY,
-                                   NormalisableRange<float> rangeTan)
+                                   NormalisableRange<float> rangeTan,
+                                   std::vector<KnotData> fixedKnots)
   : rangeX(rangeX)
   , rangeY(rangeY)
   , rangeTan(rangeTan)
+  , fixedKnots(fixedKnots)
 {
   assert(parameters.size() == 10 * numKnots);
   int p = 0;

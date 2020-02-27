@@ -23,6 +23,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 struct SplineParameters
 {
+  struct KnotData
+  {
+    float x;
+    float y;
+    float t;
+    float s;
+  };
+
   struct KnotParameters
   {
     AudioParameterFloat* x;
@@ -59,6 +67,7 @@ struct SplineParameters
   };
 
   std::vector<LinkableKnotParameters> knots;
+  std::vector<KnotData> fixedKnots;
 
   NormalisableRange<float> rangeX;
   NormalisableRange<float> rangeY;
@@ -75,13 +84,15 @@ struct SplineParameters
     NormalisableRange<float> rangeX,
     NormalisableRange<float> rangeY,
     NormalisableRange<float> rangeTan,
-    std::function<bool(int)> isKnotActive = [](int) { return true; });
+    std::function<bool(int)> isKnotActive = [](int) { return true; },
+    std::vector<KnotData> fixedKnots = {});
 
   SplineParameters(std::vector<AudioParameterFloat*> parameters,
                    int numKnots,
                    NormalisableRange<float> rangeX,
                    NormalisableRange<float> rangeY,
-                   NormalisableRange<float> rangeTan);
+                   NormalisableRange<float> rangeTan,
+                   std::vector<KnotData> fixedKnots = {});
 
   template<class SplineHolderClass>
   typename SplineHolderClass::SplineInterface* updateSpline(
@@ -94,6 +105,15 @@ struct SplineParameters
     }
     auto splineKnots = spline->getKnots();
     int n = 0;
+    for (auto& knot : fixedKnots) {
+      for (int c = 0; c < 2; ++c) {
+        splineKnots[n].target.x[c] = knot.x;
+        splineKnots[n].target.y[c] = knot.y;
+        splineKnots[n].target.t[c] = knot.t;
+        splineKnots[n].target.s[c] = knot.s;
+      }
+      ++n;
+    }
     for (auto& knot : knots) {
       if (knot.IsEnabled()) {
         for (int c = 0; c < 2; ++c) {
