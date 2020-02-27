@@ -32,8 +32,8 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
   , waveShaperParameters(waveShaperParameters)
 {
   if (waveShaperParameters) {
-    waveShaperHolder.initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES>();
-    for (int n = 1; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES; ++n) {
+    waveShaperHolder.initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS>();
+    for (int n = 1; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS; ++n) {
       auto spline = waveShaperHolder.getSpline(n);
       spline->setWet(1.f);
       spline->setDc(0.f);
@@ -41,12 +41,12 @@ SplineEditor::SplineEditor(SplineParameters& parameters,
     }
   }
   else {
-    splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_NODES>();
+    splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>();
   }
 
   setSize(400, 400);
 
-  areaInWhichToDrawNodes = getBounds();
+  areaInWhichToDrawKnots = getBounds();
 
   startTimer(50);
 }
@@ -152,13 +152,13 @@ SplineEditor::paint(Graphics& g)
     g.drawLine(0.f, y0, x0, y0);
   }
 
-  // nodes
+  // knots
 
-  bool const forceNodeDrawing = areaInWhichToDrawNodes.contains(mousePosition);
+  bool const forceKnotDrawing = areaInWhichToDrawKnots.contains(mousePosition);
 
-  if (isMouseInside || forceNodeDrawing) {
+  if (isMouseInside || forceKnotDrawing) {
 
-    auto const fillNode = [&](Point<float> centre, float diameter) {
+    auto const fillKnot = [&](Point<float> centre, float diameter) {
       g.drawEllipse(centre.x - diameter * 0.5f,
                     centre.y - diameter * 0.5f,
                     diameter,
@@ -166,16 +166,16 @@ SplineEditor::paint(Graphics& g)
                     1.f);
     };
 
-    // halo around selcted nodes
+    // halo around selcted knots
 
     auto const fillHalo = [&](int channel) {
-      auto const coord = getNodeCoord(selectedNode, channel);
+      auto const coord = getKnotCoord(selectedKnot, channel);
 
-      auto const& node = spline.nodes[selectedNode];
+      auto const& knot = spline.knots[selectedKnot];
 
       bool const isEnabled =
-        channel == 0 ? node.enabled->getValue()
-                     : node.enabled->getValue() && !node.linked->getValue();
+        channel == 0 ? knot.enabled->getValue()
+                     : knot.enabled->getValue() && !knot.linked->getValue();
 
       auto const diameter = isEnabled ? 2.f * widgetOffset : widgetOffset;
 
@@ -196,12 +196,12 @@ SplineEditor::paint(Graphics& g)
     fillHalo(0);
     fillHalo(1);
 
-    // nodes
+    // knots
 
-    for (auto& node : spline.nodes) {
+    for (auto& knot : spline.knots) {
 
       for (int c = 1; c >= 0; --c) {
-        auto& params = node.parameters[c];
+        auto& params = knot.parameters[c];
 
         Point<float> const coord = { xToPixel(params.x->getValue()),
                                      yToPixel(params.y->getValue()) };
@@ -209,13 +209,13 @@ SplineEditor::paint(Graphics& g)
         if (bounds.contains(coord)) {
 
           bool const isEnabled =
-            c == 0 ? node.enabled->getValue()
-                   : node.enabled->getValue() && !node.linked->getValue();
+            c == 0 ? knot.enabled->getValue()
+                   : knot.enabled->getValue() && !knot.linked->getValue();
 
-          g.setColour(isEnabled ? nodeColours[c]
-                                : nodeColours[c].darker(0.5f).withAlpha(0.5f));
+          g.setColour(isEnabled ? knotColours[c]
+                                : knotColours[c].darker(0.5f).withAlpha(0.5f));
 
-          fillNode(coord, bigControlPointSize);
+          fillKnot(coord, bigKnotSize);
 
           float const t = params.t->getValue();
           float const dx = widgetOffset / sqrt(1.f + t * t);
@@ -227,9 +227,9 @@ SplineEditor::paint(Graphics& g)
           auto const rightTan = coord + dt;
           auto const smooth = coord - ds;
 
-          fillNode(leftTan, smallControlPointSize);
-          fillNode(rightTan, smallControlPointSize);
-          fillNode(smooth, smallControlPointSize);
+          fillKnot(leftTan, smallKnotSize);
+          fillKnot(rightTan, smallKnotSize);
+          fillKnot(smooth, smallKnotSize);
 
           g.drawLine(Line<float>(leftTan, rightTan), lineThickness);
           g.drawLine(Line<float>(coord, smooth), lineThickness);
@@ -320,23 +320,23 @@ SplineEditor::resized()
   setupZoom({ 0.5f * getWidth(), 0.5f * getHeight() }, { 1.f, 1.f });
 }
 
-SplineEditor::NodeSelectionResult
-SplineEditor::selectNode(MouseEvent const& event)
+SplineEditor::KnotSelectionResult
+SplineEditor::selectKnot(MouseEvent const& event)
 {
   float maxDistance = getWidth() + getHeight();
   float minDistances[2] = { maxDistance, maxDistance };
-  int nodes[2] = { -1, -1 };
-  Point<float> nodeCoords[2];
+  int knots[2] = { -1, -1 };
+  Point<float> knotCoords[2];
 
   for (int c = 0; c < 2; ++c) {
-    for (int n = 0; n < spline.nodes.size(); ++n) {
+    for (int n = 0; n < spline.knots.size(); ++n) {
 
-      nodeCoords[c] = getNodeCoord(n, c);
-      float distance = nodeCoords[c].getDistanceFrom(event.position);
+      knotCoords[c] = getKnotCoord(n, c);
+      float distance = knotCoords[c].getDistanceFrom(event.position);
 
       if (distance < minDistances[c]) {
         minDistances[c] = distance;
-        nodes[c] = n;
+        knots[c] = n;
       }
     }
   }
@@ -347,23 +347,23 @@ SplineEditor::selectNode(MouseEvent const& event)
   interactingChannel =
     interactingChannel == 1 ? 1 : (minDistances[0] <= minDistances[1] ? 0 : 1);
 
-  return { nodes[interactingChannel], minDistances[interactingChannel] };
+  return { knots[interactingChannel], minDistances[interactingChannel] };
 }
 
 void
 SplineEditor::mouseDown(MouseEvent const& event)
 {
-  auto [node, minDistance] = selectNode(event);
+  auto [knot, minDistance] = selectKnot(event);
 
-  if (node == -1) {
+  if (knot == -1) {
     interaction = InteractionType::Movement;
     prevOffset = offset;
     return;
   }
 
-  Point<float> nodeCoord = getNodeCoord(node, interactingChannel);
+  Point<float> knotCoord = getKnotCoord(knot, interactingChannel);
 
-  auto& params = spline.nodes[node].parameters[interactingChannel];
+  auto& params = spline.knots[knot].parameters[interactingChannel];
 
   float const radius = 0.5f * widgetOffset;
 
@@ -381,19 +381,19 @@ SplineEditor::mouseDown(MouseEvent const& event)
     float const dy = -dx * t;
     auto const dt = Point<float>(dx, dy);
 
-    if (event.position.getDistanceFrom(nodeCoord + dt) <= radius) {
+    if (event.position.getDistanceFrom(knotCoord + dt) <= radius) {
       interaction = InteractionType::RightTangent;
       interactionBuffer = params.t->getValue();
       params.t->dragStarted();
       hit = true;
     }
-    else if (event.position.getDistanceFrom(nodeCoord - dt) <= radius) {
+    else if (event.position.getDistanceFrom(knotCoord - dt) <= radius) {
       interaction = InteractionType::LeftTangent;
       interactionBuffer = params.t->getValue();
       params.t->dragStarted();
       hit = true;
     }
-    else if (event.position.getDistanceFrom(nodeCoord -
+    else if (event.position.getDistanceFrom(knotCoord -
                                             Point<float>(dy, -dx)) <= radius) {
       interaction = InteractionType::Smoothing;
       interactionBuffer = params.s->getValue();
@@ -407,9 +407,9 @@ SplineEditor::mouseDown(MouseEvent const& event)
   }
 
   if (hit) {
-    selectedNode = node;
-    if (nodeEditor) {
-      nodeEditor->setSelectedNode(selectedNode);
+    selectedKnot = knot;
+    if (knotEditor) {
+      knotEditor->setSelectedKnot(selectedKnot);
     }
   }
 }
@@ -425,7 +425,7 @@ SplineEditor::mouseDrag(MouseEvent const& event)
     setupSplineInputBuffer();
   }
 
-  auto& params = spline.nodes[selectedNode].parameters[interactingChannel];
+  auto& params = spline.knots[selectedKnot].parameters[interactingChannel];
 
   float constexpr tangentDragSpeed = 0.030625;
   float constexpr smoothnessDragSpeed = 0.005;
@@ -467,7 +467,7 @@ SplineEditor::mouseUp(MouseEvent const& event)
     return;
   }
 
-  auto& params = spline.nodes[selectedNode].parameters[interactingChannel];
+  auto& params = spline.knots[selectedKnot].parameters[interactingChannel];
 
   switch (interaction) {
 
@@ -497,9 +497,9 @@ SplineEditor::mouseUp(MouseEvent const& event)
 void
 SplineEditor::mouseDoubleClick(MouseEvent const& event)
 {
-  auto [node, minDistance] = selectNode(event);
+  auto [knot, minDistance] = selectKnot(event);
 
-  if (node == -1) {
+  if (knot == -1) {
     return;
   }
 
@@ -508,16 +508,16 @@ SplineEditor::mouseDoubleClick(MouseEvent const& event)
   }
 
   if (interactingChannel == 0) {
-    spline.nodes[node].enabled->invertValueFromGui();
+    spline.knots[knot].enabled->invertValueFromGui();
   }
   else {
-    spline.nodes[node].linked->invertValueFromGui();
+    spline.knots[knot].linked->invertValueFromGui();
   }
 
-  selectedNode = node;
+  selectedKnot = knot;
 
-  if (nodeEditor) {
-    nodeEditor->setSelectedNode(selectedNode);
+  if (knotEditor) {
+    knotEditor->setSelectedKnot(selectedKnot);
   }
 }
 
@@ -538,9 +538,9 @@ SplineEditor::mouseMagnify(MouseEvent const& event, float scaleFactor)
 }
 
 void
-SplineEditor::setSelectedNode(int node)
+SplineEditor::setSelectedKnot(int knot)
 {
-  selectedNode = node;
+  selectedKnot = knot;
   repaint();
 }
 
@@ -618,11 +618,11 @@ SplineEditor::setupZoom(Point<float> fixedPoint, Point<float> newZoom)
 }
 
 Point<float>
-SplineEditor::getNodeCoord(int nodeIndex, int channel)
+SplineEditor::getKnotCoord(int knotIndex, int channel)
 {
-  auto& nodeParams = spline.nodes[nodeIndex].parameters[channel];
-  return Point<float>(xToPixel(nodeParams.x->getValue()),
-                      yToPixel(nodeParams.y->getValue()));
+  auto& knotParams = spline.knots[knotIndex].parameters[channel];
+  return Point<float>(xToPixel(knotParams.x->getValue()),
+                      yToPixel(knotParams.y->getValue()));
 }
 
 SplineAttachments::SplineAttachments(SplineParameters& parameters,
@@ -630,34 +630,34 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
                                      std::function<void(void)> onChange,
                                      WaveShaperParameters* waveShaperParameters)
 {
-  auto const makeNodeAttachments =
-    [&](SplineParameters::LinkableNodeParameters node, int channel) {
-      return SplineAttachments::NodeAttachments{
+  auto const makeKnotAttachments =
+    [&](SplineParameters::LinkableKnotParameters knot, int channel) {
+      return SplineAttachments::KnotAttachments{
         FloatAttachment::make(apvts,
-                              node.parameters[channel].x->paramID,
+                              knot.parameters[channel].x->paramID,
                               onChange,
                               parameters.rangeX),
         FloatAttachment::make(apvts,
-                              node.parameters[channel].y->paramID,
+                              knot.parameters[channel].y->paramID,
                               onChange,
                               parameters.rangeY),
         FloatAttachment::make(apvts,
-                              node.parameters[channel].t->paramID,
+                              knot.parameters[channel].t->paramID,
                               onChange,
                               parameters.rangeTan),
         FloatAttachment::make(apvts,
-                              node.parameters[channel].s->paramID,
+                              knot.parameters[channel].s->paramID,
                               onChange,
                               NormalisableRange<float>{ 0.f, 1.f, 0.01f })
       };
     };
 
-  for (auto& node : parameters.nodes) {
-    nodes.push_back(SplineAttachments::LinkableNodeAttachments{
-      std::array<SplineAttachments::NodeAttachments, 2>{
-        { makeNodeAttachments(node, 0), makeNodeAttachments(node, 1) } },
-      BoolAttachment::make(apvts, node.enabled.getID(), onChange),
-      BoolAttachment::make(apvts, node.linked.getID(), onChange) });
+  for (auto& knot : parameters.knots) {
+    knots.push_back(SplineAttachments::LinkableKnotAttachments{
+      std::array<SplineAttachments::KnotAttachments, 2>{
+        { makeKnotAttachments(knot, 0), makeKnotAttachments(knot, 1) } },
+      BoolAttachment::make(apvts, knot.enabled.getID(), onChange),
+      BoolAttachment::make(apvts, knot.linked.getID(), onChange) });
   }
 
   if (waveShaperParameters) {
@@ -669,18 +669,18 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
 }
 
 int
-SplineAttachments::getNumActiveNodes()
+SplineAttachments::getNumActiveKnots()
 {
-  int numNodes = 0;
-  for (auto& node : nodes) {
-    if (node.enabled->getValue()) {
-      ++numNodes;
+  int numKnots = 0;
+  for (auto& knot : knots) {
+    if (knot.enabled->getValue()) {
+      ++numKnots;
     }
   }
-  return numNodes;
+  return numKnots;
 }
 
-SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
+SplineKnotEditor::SplineKnotEditor(SplineParameters& parameters,
                                    AudioProcessorValueTreeState& apvts,
                                    String const& midSideParamID)
   : parameters(parameters)
@@ -689,22 +689,22 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
   , linked(*this, apvts)
   , channelLabels(apvts, midSideParamID, false)
 {
-  enabled.getControl().setButtonText("Node is Active");
-  linked.getControl().setButtonText("Node is Linked");
+  enabled.getControl().setButtonText("Knot is Active");
+  linked.getControl().setButtonText("Knot is Linked");
 
   addAndMakeVisible(label);
   addAndMakeVisible(channelLabels);
-  addAndMakeVisible(selectedNode);
+  addAndMakeVisible(selectedKnot);
 
-  for (int i = 1; i <= parameters.nodes.size(); ++i) {
-    selectedNode.addItem(std::to_string(i), i);
+  for (int i = 1; i <= parameters.knots.size(); ++i) {
+    selectedKnot.addItem(std::to_string(i), i);
   }
 
-  selectedNode.onChange = [this] {
-    int node = selectedNode.getSelectedId() - 1;
-    setNode(node);
+  selectedKnot.onChange = [this] {
+    int knot = selectedKnot.getSelectedId() - 1;
+    setKnot(knot);
     if (splineEditor) {
-      splineEditor->setSelectedNode(node);
+      splineEditor->setSelectedKnot(knot);
     }
   };
 
@@ -713,13 +713,13 @@ SplineNodeEditor::SplineNodeEditor(SplineParameters& parameters,
   setOpaque(false);
   setSize(360, 120);
 
-  setNode(0);
+  setKnot(0);
 
   startTimer(50);
 }
 
 void
-SplineNodeEditor::resized()
+SplineKnotEditor::resized()
 {
   int const rowHeight = getHeight() / 4;
 
@@ -728,8 +728,8 @@ SplineNodeEditor::resized()
 
   label.setTopLeftPosition(0, 0);
   label.setSize(130 * widthFactor, rowHeight);
-  selectedNode.setTopLeftPosition(130 * widthFactor, rowHeight * 0.1);
-  selectedNode.setSize(60, rowHeight * 0.8);
+  selectedKnot.setTopLeftPosition(130 * widthFactor, rowHeight * 0.1);
+  selectedKnot.setSize(60, rowHeight * 0.8);
 
   Grid grid;
   using Track = Grid::TrackInfo;
@@ -766,7 +766,7 @@ SplineNodeEditor::resized()
 }
 
 void
-SplineNodeEditor::paint(Graphics& g)
+SplineKnotEditor::paint(Graphics& g)
 {
   int right = s->getBounds().getRight();
   g.setColour(tableSettings.backgroundColour);
@@ -777,14 +777,14 @@ SplineNodeEditor::paint(Graphics& g)
 }
 
 void
-SplineNodeEditor::setSelectedNode(int newNodeIndex, bool forceUpdate)
+SplineKnotEditor::setSelectedKnot(int newKnotIndex, bool forceUpdate)
 {
-  setNode(newNodeIndex, forceUpdate);
-  selectedNode.setSelectedId(newNodeIndex + 1, sendNotification);
+  setKnot(newKnotIndex, forceUpdate);
+  selectedKnot.setSelectedId(newKnotIndex + 1, sendNotification);
 }
 
 void
-SplineNodeEditor::setTableSettings(LinkableControlTable tableSettings)
+SplineKnotEditor::setTableSettings(LinkableControlTable tableSettings)
 {
   this->tableSettings = tableSettings;
   channelLabels.tableSettings = tableSettings;
@@ -795,18 +795,18 @@ SplineNodeEditor::setTableSettings(LinkableControlTable tableSettings)
 }
 
 void
-SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
+SplineKnotEditor::setKnot(int newKnotIndex, bool forceUpdate)
 {
-  if (!forceUpdate && nodeIndex == newNodeIndex) {
+  if (!forceUpdate && knotIndex == newKnotIndex) {
     return;
   }
 
-  nodeIndex = newNodeIndex;
+  knotIndex = newKnotIndex;
 
-  auto& node = parameters.nodes[nodeIndex];
+  auto& knot = parameters.knots[knotIndex];
 
-  auto& linkedParamID = node.linked.getID();
-  auto& enabledParamID = node.enabled.getID();
+  auto& linkedParamID = knot.linked.getID();
+  auto& enabledParamID = knot.enabled.getID();
 
   linked.setParameter(linkedParamID);
   enabled.setParameter(enabledParamID);
@@ -821,8 +821,8 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
     apvts,
     xLabel,
     linkedParamID,
-    node.parameters[0].x->paramID,
-    node.parameters[1].x->paramID,
+    knot.parameters[0].x->paramID,
+    knot.parameters[1].x->paramID,
     false);
 
   addAndMakeVisible(*x);
@@ -835,8 +835,8 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
     apvts,
     yLabel,
     linkedParamID,
-    node.parameters[0].y->paramID,
-    node.parameters[1].y->paramID,
+    knot.parameters[0].y->paramID,
+    knot.parameters[1].y->paramID,
     false);
 
   addAndMakeVisible(*y);
@@ -849,8 +849,8 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
     apvts,
     "Tangent",
     linkedParamID,
-    node.parameters[0].t->paramID,
-    node.parameters[1].t->paramID,
+    knot.parameters[0].t->paramID,
+    knot.parameters[1].t->paramID,
     false);
 
   addAndMakeVisible(*t);
@@ -863,8 +863,8 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
     apvts,
     "Smoothness",
     linkedParamID,
-    node.parameters[0].s->paramID,
-    node.parameters[1].s->paramID,
+    knot.parameters[0].s->paramID,
+    knot.parameters[1].s->paramID,
     false);
 
   addAndMakeVisible(*s);
@@ -887,10 +887,10 @@ SplineNodeEditor::setNode(int newNodeIndex, bool forceUpdate)
 
 void
 AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
-                                 SplineNodeEditor& nodeEditor,
-                                 int selectedNode)
+                                 SplineKnotEditor& knotEditor,
+                                 int selectedKnot)
 {
-  splineEditor.nodeEditor = &nodeEditor;
-  nodeEditor.splineEditor = &splineEditor;
-  nodeEditor.setSelectedNode(selectedNode, true);
+  splineEditor.knotEditor = &knotEditor;
+  knotEditor.splineEditor = &splineEditor;
+  knotEditor.setSelectedKnot(selectedKnot, true);
 }

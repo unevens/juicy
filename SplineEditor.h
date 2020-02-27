@@ -22,19 +22,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "avec/dsp/Spline.hpp"
 #include <JuceHeader.h>
 
-// use these macro to define the maximum number of nodes supported
+// use these macro to define the maximum number of knots supported
 
-#ifndef JUICY_MAX_SPLINE_EDITOR_NUM_NODES
-#define JUICY_MAX_SPLINE_EDITOR_NUM_NODES 8
-#endif // !MAX_SPLINE_EDITOR_NUM_NODES
+#ifndef JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS
+#define JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS 8
+#endif // !MAX_SPLINE_EDITOR_NUM_KNOTS
 
-#ifndef JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES
-#define JUICY_MAX_WAVESHAPER_EDITOR_NUM_NODES 17
-#endif // !MAX_SPLINE_EDITOR_NUM_NODES
+#ifndef JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS
+#define JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS 17
+#endif // !MAX_SPLINE_EDITOR_NUM_KNOTS
 
 struct SplineAttachments
 {
-  struct NodeAttachments
+  struct KnotAttachments
   {
     std::unique_ptr<FloatAttachment> x;
     std::unique_ptr<FloatAttachment> y;
@@ -42,14 +42,14 @@ struct SplineAttachments
     std::unique_ptr<FloatAttachment> s;
   };
 
-  struct LinkableNodeAttachments
+  struct LinkableKnotAttachments
   {
-    std::array<NodeAttachments, 2> parameters;
+    std::array<KnotAttachments, 2> parameters;
     std::unique_ptr<BoolAttachment> enabled;
     std::unique_ptr<BoolAttachment> linked;
   };
 
-  std::vector<LinkableNodeAttachments> nodes;
+  std::vector<LinkableKnotAttachments> knots;
 
   std::array<std::unique_ptr<BoolAttachment>, 2> symmetry;
 
@@ -58,24 +58,24 @@ struct SplineAttachments
                     std::function<void(void)> onChange,
                     WaveShaperParameters* waveShaperParameters = nullptr);
 
-  int getNumActiveNodes();
+  int getNumActiveKnots();
 };
 
 class SplineEditor;
-class SplineNodeEditor;
+class SplineKnotEditor;
 
 void
 AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
-                                 SplineNodeEditor& nodeEditor,
-                                 int selectedNode = 0);
+                                 SplineKnotEditor& knotEditor,
+                                 int selectedKnot = 0);
 
 class SplineEditor
   : public Component
   , public Timer
 {
   friend void AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
-                                               SplineNodeEditor& nodeEditor,
-                                               int selectedNode);
+                                               SplineKnotEditor& knotEditor,
+                                               int selectedKnot);
 
 public:
   SplineEditor(SplineParameters& parameters,
@@ -93,23 +93,23 @@ public:
                       MouseWheelDetails const& wheel) override;
   void mouseMagnify(MouseEvent const& event, float scaleFactor) override;
 
-  void setSelectedNode(int node);
+  void setSelectedKnot(int knot);
 
-  juce::Rectangle<int> areaInWhichToDrawNodes;
-  // When the mouse is inside the editor, the spline control points will be
+  juce::Rectangle<int> areaInWhichToDrawKnots;
+  // When the mouse is inside the editor, the spline knots will be
   // drawn on top of the curve. To have them drawn also when the mouse is
-  // over the a SplineNodeEditor instance, you can use the
-  // areaInWhichToDrawNodes member. It is a Rectangle in the coordinates of the
-  // parent component. When the mouse is in it, the control points will be
+  // over the a SplineKnotEditor instance, you can use the
+  // areaInWhichToDrawKnots member. It is a Rectangle in the coordinates of the
+  // parent component. When the mouse is in it, the knots will be
   // drawn.
 
   // These members can be used to customize the appearance of the editor
 
   float widgetOffset = 20.f;
 
-  float bigControlPointSize = 10.f;
+  float bigKnotSize = 10.f;
 
-  float smallControlPointSize = 6.f;
+  float smallKnotSize = 6.f;
 
   Point<int> numGridLines = { 8, 8 };
 
@@ -130,7 +130,7 @@ public:
 
   std::array<Colour, 2> curveColours = { { Colours::blue, Colours::red } };
 
-  std::array<Colour, 2> nodeColours = { { Colours::steelblue,
+  std::array<Colour, 2> knotColours = { { Colours::steelblue,
                                           Colours::orangered } };
 
   std::array<Colour, 2> vuMeterColours = { { Colours::cadetblue,
@@ -146,17 +146,17 @@ public:
 
 private:
   SplineParameters& parameters;
-  SplineNodeEditor* nodeEditor = nullptr;
+  SplineKnotEditor* knotEditor = nullptr;
 
-  Point<float> getNodeCoord(int nodeIndex, int channel);
+  Point<float> getKnotCoord(int knotIndex, int channel);
 
-  struct NodeSelectionResult
+  struct KnotSelectionResult
   {
-    int nodeIndex;
-    float distanceBwtweenNodeAndMouse;
+    int knotIndex;
+    float distanceBwtweenKnotAndMouse;
   };
 
-  NodeSelectionResult selectNode(MouseEvent const& event);
+  KnotSelectionResult selectKnot(MouseEvent const& event);
 
   void setupZoom(Point<float> fixedPoint, Point<float> newZoom);
 
@@ -174,7 +174,7 @@ private:
 
   void OnSplineChange();
 
-  int selectedNode = 0;
+  int selectedKnot = 0;
 
   enum class InteractionType
   {
@@ -215,16 +215,16 @@ private:
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SplineEditor)
 };
 
-class SplineNodeEditor
+class SplineKnotEditor
   : public Component
   , public Timer
 {
   friend void AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
-                                               SplineNodeEditor& nodeEditor,
-                                               int selectedNode);
+                                               SplineKnotEditor& knotEditor,
+                                               int selectedKnot);
 
 public:
-  SplineNodeEditor(SplineParameters& parameters,
+  SplineKnotEditor(SplineParameters& parameters,
                    AudioProcessorValueTreeState& apvts,
                    String const& midSideParamID = "Mid-Side");
 
@@ -232,7 +232,7 @@ public:
 
   void paint(Graphics& g) override;
 
-  void setSelectedNode(int newNodeIndex, bool forceUpdate = false);
+  void setSelectedKnot(int newKnotIndex, bool forceUpdate = false);
 
   void setTableSettings(LinkableControlTable tableSettings);
 
@@ -240,20 +240,20 @@ public:
   String yLabel = "Y";
 
 private:
-  void setNode(int newNodeIndex, bool forceUpdate = false);
+  void setKnot(int newKnotIndex, bool forceUpdate = false);
 
   void timerCallback() override { repaint(); }
 
   SplineEditor* splineEditor = nullptr;
 
-  int nodeIndex = -1;
+  int knotIndex = -1;
 
   SplineParameters& parameters;
   AudioProcessorValueTreeState& apvts;
 
-  Label label{ {}, "Selected Node" };
+  Label label{ {}, "Selected Knot" };
 
-  ComboBox selectedNode;
+  ComboBox selectedKnot;
 
   AttachedToggle enabled;
   AttachedToggle linked;
@@ -267,5 +267,5 @@ private:
 
   LinkableControlTable tableSettings;
 
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SplineNodeEditor)
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SplineKnotEditor)
 };

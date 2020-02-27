@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cassert>
 
 bool
-SplineParameters::LinkableNodeParameters::needsReset()
+SplineParameters::LinkableKnotParameters::needsReset()
 {
   bool const isEnabled = IsEnabled();
   bool const isLinked = IsLinked();
@@ -29,8 +29,8 @@ SplineParameters::LinkableNodeParameters::needsReset()
   return resetFlag;
 }
 
-SplineParameters::NodeParameters&
-SplineParameters::LinkableNodeParameters::getActiveParameters(int channel)
+SplineParameters::KnotParameters&
+SplineParameters::LinkableKnotParameters::getActiveParameters(int channel)
 {
   if (IsLinked()) {
     return parameters[0];
@@ -39,22 +39,22 @@ SplineParameters::LinkableNodeParameters::getActiveParameters(int channel)
 }
 
 int
-SplineParameters::getNumActiveNodes()
+SplineParameters::getNumActiveKnots()
 {
-  int numNodes = 0;
-  for (auto& node : nodes) {
-    if (node.IsEnabled()) {
-      ++numNodes;
+  int numKnots = 0;
+  for (auto& knot : knots) {
+    if (knot.IsEnabled()) {
+      ++numKnots;
     }
   }
-  return numNodes;
+  return numKnots;
 }
 
 bool
 SplineParameters::needsReset()
 {
-  for (auto& node : nodes) {
-    if (node.needsReset()) {
+  for (auto& knot : knots) {
+    if (knot.needsReset()) {
       return true;
     }
   }
@@ -64,11 +64,11 @@ SplineParameters::needsReset()
 SplineParameters::SplineParameters(
   String splinePrefix,
   std::vector<std::unique_ptr<RangedAudioParameter>>& parametersForApvts,
-  int numNodes,
+  int numKnots,
   NormalisableRange<float> rangeX,
   NormalisableRange<float> rangeY,
   NormalisableRange<float> rangeTan,
-  std::function<bool(int)> isNodeActive)
+  std::function<bool(int)> isKnotActive)
   : rangeX(rangeX)
   , rangeY(rangeY)
   , rangeTan(rangeTan)
@@ -91,10 +91,10 @@ SplineParameters::SplineParameters(
     return a + (b - a) * alpha;
   };
 
-  auto const createNodeParameters = [&](String prefix, String postfix, int i) {
-    float alpha = (i + 1) / (float)(numNodes + 1);
+  auto const createKnotParameters = [&](String prefix, String postfix, int i) {
+    float alpha = (i + 1) / (float)(numKnots + 1);
 
-    return NodeParameters{
+    return KnotParameters{
 
       createFloatParameter(
         prefix + "X" + postfix, rangeX.convertFrom0to1(alpha), rangeX),
@@ -112,34 +112,34 @@ SplineParameters::SplineParameters(
     };
   };
 
-  auto const createLinkableNodeParameters = [&](int i) {
+  auto const createLinkableKnotParameters = [&](int i) {
     String postfix = "_n" + std::to_string(i + 1);
 
     // parameters are constructed in the order in which they will appear to the
     // host
 
     auto enabled =
-      createBoolParameter(splinePrefix + "enabled" + postfix, isNodeActive(i));
+      createBoolParameter(splinePrefix + "enabled" + postfix, isKnotActive(i));
     auto linked = createBoolParameter(splinePrefix + "linked" + postfix, true);
-    auto ch0 = createNodeParameters(splinePrefix, postfix + "_ch0", i);
-    auto ch1 = createNodeParameters(splinePrefix, postfix + "_ch1", i);
+    auto ch0 = createKnotParameters(splinePrefix, postfix + "_ch0", i);
+    auto ch1 = createKnotParameters(splinePrefix, postfix + "_ch1", i);
 
     // and stored in their struct
 
-    return LinkableNodeParameters{
+    return LinkableKnotParameters{
       std::move(ch0), std::move(ch1), std::move(enabled), std::move(linked)
     };
   };
 
-  nodes.reserve(numNodes);
+  knots.reserve(numKnots);
 
-  for (int i = 0; i < numNodes; ++i) {
-    nodes.push_back(createLinkableNodeParameters(i));
+  for (int i = 0; i < numKnots; ++i) {
+    knots.push_back(createLinkableKnotParameters(i));
   }
 }
 
 SplineParameters::SplineParameters(std::vector<AudioParameterFloat*> parameters,
-                                   int numNodes,
+                                   int numKnots,
                                    NormalisableRange<float> rangeX,
                                    NormalisableRange<float> rangeY,
                                    NormalisableRange<float> rangeTan)
@@ -147,11 +147,11 @@ SplineParameters::SplineParameters(std::vector<AudioParameterFloat*> parameters,
   , rangeY(rangeY)
   , rangeTan(rangeTan)
 {
-  assert(parameters.size() == 10 * numNodes);
+  assert(parameters.size() == 10 * numKnots);
   int p = 0;
-  for (int i = 0; i < numNodes; ++i) {
-    nodes.push_back(
-      LinkableNodeParameters({ parameters[p],
+  for (int i = 0; i < numKnots; ++i) {
+    knots.push_back(
+      LinkableKnotParameters({ parameters[p],
                                parameters[p + 1],
                                parameters[p + 2],
                                parameters[p + 3] },

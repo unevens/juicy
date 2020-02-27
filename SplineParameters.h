@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 struct SplineParameters
 {
-  struct NodeParameters
+  struct KnotParameters
   {
     AudioParameterFloat* x;
     AudioParameterFloat* y;
@@ -31,18 +31,18 @@ struct SplineParameters
     AudioParameterFloat* s;
   };
 
-  class LinkableNodeParameters
+  class LinkableKnotParameters
   {
     bool wasLinked = false;
     bool wasEnabled = false;
 
   public:
-    std::array<NodeParameters, 2> parameters;
+    std::array<KnotParameters, 2> parameters;
     WrappedBoolParameter enabled;
     WrappedBoolParameter linked;
 
-    LinkableNodeParameters(NodeParameters parameters0,
-                           NodeParameters parameters1,
+    LinkableKnotParameters(KnotParameters parameters0,
+                           KnotParameters parameters1,
                            WrappedBoolParameter enabled,
                            WrappedBoolParameter linked)
       : parameters{ parameters0, parameters1 }
@@ -55,30 +55,30 @@ struct SplineParameters
 
     bool needsReset();
 
-    NodeParameters& getActiveParameters(int channel);
+    KnotParameters& getActiveParameters(int channel);
   };
 
-  std::vector<LinkableNodeParameters> nodes;
+  std::vector<LinkableKnotParameters> knots;
 
   NormalisableRange<float> rangeX;
   NormalisableRange<float> rangeY;
   NormalisableRange<float> rangeTan;
 
-  int getNumActiveNodes();
+  int getNumActiveKnots();
 
   bool needsReset();
 
   SplineParameters(
     String splinePrefix,
     std::vector<std::unique_ptr<RangedAudioParameter>>& parametersForApvts,
-    int numNodes,
+    int numKnots,
     NormalisableRange<float> rangeX,
     NormalisableRange<float> rangeY,
     NormalisableRange<float> rangeTan,
-    std::function<bool(int)> isNodeActive = [](int) { return true; });
+    std::function<bool(int)> isKnotActive = [](int) { return true; });
 
   SplineParameters(std::vector<AudioParameterFloat*> parameters,
-                   int numNodes,
+                   int numKnots,
                    NormalisableRange<float> rangeX,
                    NormalisableRange<float> rangeY,
                    NormalisableRange<float> rangeTan);
@@ -87,21 +87,21 @@ struct SplineParameters
   typename SplineHolderClass::SplineInterface* updateSpline(
     SplineHolderClass& splines)
   {
-    int const numNodes = getNumActiveNodes();
-    auto spline = splines.getSpline(numNodes);
+    int const numKnots = getNumActiveKnots();
+    auto spline = splines.getSpline(numKnots);
     if (!spline) {
       return nullptr;
     }
-    auto splineNodes = spline->getNodes();
+    auto splineKnots = spline->getKnots();
     int n = 0;
-    for (auto& node : nodes) {
-      if (node.IsEnabled()) {
+    for (auto& knot : knots) {
+      if (knot.IsEnabled()) {
         for (int c = 0; c < 2; ++c) {
-          auto& params = node.getActiveParameters(c);
-          splineNodes[n].target.x[c] = params.x->get();
-          splineNodes[n].target.y[c] = params.y->get();
-          splineNodes[n].target.t[c] = params.t->get();
-          splineNodes[n].target.s[c] = params.s->get();
+          auto& params = knot.getActiveParameters(c);
+          splineKnots[n].target.x[c] = params.x->get();
+          splineKnots[n].target.y[c] = params.y->get();
+          splineKnots[n].target.t[c] = params.t->get();
+          splineKnots[n].target.s[c] = params.s->get();
         }
         ++n;
       }
