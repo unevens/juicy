@@ -313,7 +313,7 @@ public:
     }
   }
 
-  void paint(Graphics& g)
+  void paint(Graphics& g) override
   {
     tableSettings.paintTable(
       g, getWidth(), getHeight(), linkLabel ? true : false);
