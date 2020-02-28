@@ -65,7 +65,7 @@ class SplineEditor;
 class SplineKnotEditor;
 
 void
-AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
+attachAndInitializeSplineEditors(SplineEditor& splineEditor,
                                  SplineKnotEditor& knotEditor,
                                  int selectedKnot = 0);
 
@@ -73,7 +73,7 @@ class SplineEditor
   : public Component
   , public Timer
 {
-  friend void AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
+  friend void attachAndInitializeSplineEditors(SplineEditor& splineEditor,
                                                SplineKnotEditor& knotEditor,
                                                int selectedKnot);
 
@@ -219,7 +219,7 @@ class SplineKnotEditor
   : public Component
   , public Timer
 {
-  friend void AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
+  friend void attachAndInitializeSplineEditors(SplineEditor& splineEditor,
                                                SplineKnotEditor& knotEditor,
                                                int selectedKnot);
 

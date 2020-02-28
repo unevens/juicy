@@ -886,7 +886,7 @@ SplineKnotEditor::setKnot(int newKnotIndex, bool forceUpdate)
 }
 
 void
-AttachSplineEditorsAndInitialize(SplineEditor& splineEditor,
+attachAndInitializeSplineEditors(SplineEditor& splineEditor,
                                  SplineKnotEditor& knotEditor,
                                  int selectedKnot)
 {
