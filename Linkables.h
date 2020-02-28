@@ -108,15 +108,15 @@ public:
                   String const& channel0ParamID,
                   String const& channel1ParamID,
                   bool makeLinkedControl = true)
-    : paramIDs{ { channel0ParamID, channel1ParamID } }
-    , linkParamID(linkParamID)
-    , apvts(&apvts)
-    , label("", name)
-    , linked(makeLinkedControl
+    : linked(makeLinkedControl
                ? std::make_unique<AttachedToggle>(*this, apvts, linkParamID)
                : nullptr)
     , controls{ { { *this, apvts, channel0ParamID },
                   { *this, apvts, channel0ParamID } } }
+    , label("", name)
+    , paramIDs{ { channel0ParamID, channel1ParamID } }
+    , linkParamID(linkParamID)
+    , apvts(&apvts)
   {
     parameterChanged("", apvts.getParameter(linkParamID)->getValue());
     apvts.addParameterListener(linkParamID, this);
