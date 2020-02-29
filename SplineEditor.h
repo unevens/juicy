@@ -25,12 +25,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // use these macro to define the maximum number of knots supported
 
 #ifndef JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS
-#define JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS 9
-#endif // !MAX_SPLINE_EDITOR_NUM_KNOTS
-
-#ifndef JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS
-#define JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS 17
-#endif // !MAX_SPLINE_EDITOR_NUM_KNOTS
+#define JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS 17
+#endif 
 
 struct SplineAttachments
 {
