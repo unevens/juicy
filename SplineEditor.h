@@ -22,8 +22,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "avec/dsp/Spline.hpp"
 #include <JuceHeader.h>
 
-// use these macro to define the maximum number of knots supported
-
 #ifndef JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS
 #define JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS 17
 #endif 
