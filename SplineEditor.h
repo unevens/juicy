@@ -53,10 +53,11 @@ struct SplineAttachments
 
   std::array<std::unique_ptr<BoolAttachment>, 2> symmetry;
 
-  SplineAttachments(SplineParameters& parameters,
-                    AudioProcessorValueTreeState& apvts,
-                    std::function<void(void)> onChange,
-                    WaveShaperParameters* waveShaperParameters = nullptr);
+  SplineAttachments(
+    SplineParameters& parameters,
+    AudioProcessorValueTreeState& apvts,
+    std::function<void(void)> onChange,
+    LinkableParameter<WrappedBoolParameter>* symmetryParameter = nullptr);
 
   int getNumActiveKnots();
 };
@@ -78,9 +79,10 @@ class SplineEditor
                                                int selectedKnot);
 
 public:
-  SplineEditor(SplineParameters& parameters,
-               AudioProcessorValueTreeState& apvts,
-               WaveShaperParameters* waveShaperParameters = nullptr);
+  SplineEditor(
+    SplineParameters& parameters,
+    AudioProcessorValueTreeState& apvts,
+    LinkableParameter<WrappedBoolParameter>* symmetryParameter = nullptr);
 
   void paint(Graphics&) override;
   void resized() override;
@@ -203,9 +205,7 @@ private:
   avec::SplineHolder<avec::Spline, Vec2d> splineHolder;
   avec::SplineInterface<Vec2d>* splineDsp = nullptr;
 
-  WaveShaperParameters* waveShaperParameters;
-  avec::SplineHolder<avec::WaveShaper, Vec2d> waveShaperHolder;
-  avec::WaveShaperInterface<Vec2d>* waveShaperDsp = nullptr;
+  LinkableParameter<WrappedBoolParameter>* symmetryParameter;
 
   avec::VecBuffer<Vec2d> inputBuffer;
   avec::VecBuffer<Vec2d> outputBuffer;

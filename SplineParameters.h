@@ -129,11 +129,3 @@ struct SplineParameters
     return spline;
   }
 };
-
-struct WaveShaperParameters
-{
-  LinkableParameter<AudioParameterFloat> dc;
-  LinkableParameter<AudioParameterFloat> dryWet;
-  LinkableParameter<AudioParameterFloat> dcCutoff;
-  LinkableParameter<WrappedBoolParameter> symmetry;
-};

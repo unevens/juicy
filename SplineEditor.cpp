@@ -17,32 +17,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "SplineEditor.h"
 
-SplineEditor::SplineEditor(SplineParameters& parameters,
-                           AudioProcessorValueTreeState& apvts,
-                           WaveShaperParameters* waveShaperParameters)
+SplineEditor::SplineEditor(
+  SplineParameters& parameters,
+  AudioProcessorValueTreeState& apvts,
+  LinkableParameter<WrappedBoolParameter>* symmetryParameter)
   : parameters(parameters)
   , spline(
       parameters,
       apvts,
       [this]() { OnSplineChange(); },
-      waveShaperParameters)
+      symmetryParameter)
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
-  , waveShaperParameters(waveShaperParameters)
+  , symmetryParameter(symmetryParameter)
 {
-  if (waveShaperParameters) {
-    waveShaperHolder.initialize<JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS>();
-    for (int n = 1; n < JUICY_MAX_WAVESHAPER_EDITOR_NUM_KNOTS; ++n) {
-      auto spline = waveShaperHolder.getSpline(n);
-      spline->setWet(1.f);
-      spline->setDc(0.f);
-      spline->setHighPassFrequency(0.f);
-    }
-  }
-  else {
-    splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>();
-  }
+  splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>();
 
   setSize(400, 400);
 
@@ -243,39 +233,24 @@ SplineEditor::paint(Graphics& g)
   if (redrawCurvesFlag) {
     redrawCurvesFlag = false;
 
-    if (waveShaperParameters) {
+    splineDsp = parameters.updateSpline(splineHolder);
 
-      waveShaperDsp = parameters.updateSpline(waveShaperHolder);
+    if (splineDsp) {
 
-      if (waveShaperDsp) {
-
+      if (symmetryParameter) {
         for (int c = 0; c < 2; ++c) {
-          waveShaperDsp->setIsSymmetric(
-            waveShaperParameters->symmetry.get(c)->getValue() >= 0.5f);
+          splineDsp->setIsSymmetric(symmetryParameter->get(c)->getValue() >=
+                                    0.5f);
         }
+      }
 
-        waveShaperDsp->reset();
-        waveShaperDsp->processBlock(inputBuffer, outputBuffer);
-      }
-      else {
-        std::copy(&inputBuffer(0),
-                  &inputBuffer(0) + inputBuffer.getScalarSize(),
-                  &outputBuffer(0));
-      }
+      splineDsp->reset();
+      splineDsp->processBlock(inputBuffer, outputBuffer);
     }
     else {
-
-      splineDsp = parameters.updateSpline(splineHolder);
-
-      if (splineDsp) {
-        splineDsp->reset();
-        splineDsp->processBlock(inputBuffer, outputBuffer);
-      }
-      else {
-        std::copy(&inputBuffer(0),
-                  &inputBuffer(0) + inputBuffer.getScalarSize(),
-                  &outputBuffer(0));
-      }
+      std::copy(&inputBuffer(0),
+                &inputBuffer(0) + inputBuffer.getScalarSize(),
+                &outputBuffer(0));
     }
   }
 
@@ -625,10 +600,11 @@ SplineEditor::getKnotCoord(int knotIndex, int channel)
                       yToPixel(knotParams.y->getValue()));
 }
 
-SplineAttachments::SplineAttachments(SplineParameters& parameters,
-                                     AudioProcessorValueTreeState& apvts,
-                                     std::function<void(void)> onChange,
-                                     WaveShaperParameters* waveShaperParameters)
+SplineAttachments::SplineAttachments(
+  SplineParameters& parameters,
+  AudioProcessorValueTreeState& apvts,
+  std::function<void(void)> onChange,
+  LinkableParameter<WrappedBoolParameter>* symmetryParameter)
 {
   auto const makeKnotAttachments =
     [&](SplineParameters::LinkableKnotParameters knot, int channel) {
@@ -660,10 +636,10 @@ SplineAttachments::SplineAttachments(SplineParameters& parameters,
       BoolAttachment::make(apvts, knot.linked.getID(), onChange) });
   }
 
-  if (waveShaperParameters) {
+  if (symmetryParameter) {
     for (int c = 0; c < 2; ++c) {
-      symmetry[c] = BoolAttachment::make(
-        apvts, waveShaperParameters->symmetry.getID(c), onChange);
+      symmetry[c] =
+        BoolAttachment::make(apvts, symmetryParameter->getID(c), onChange);
     }
   }
 }
