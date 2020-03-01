@@ -104,14 +104,15 @@ struct SplineParameters
     if (!spline) {
       return { nullptr, nullptr };
     }
-    auto splineKnots = automator ? automator->getKnots() : spline->getKnots();
+    auto splineKnots = spline->getKnots();
+    auto automationKnots = automator ? automator->getKnots() : splineKnots;
     int n = 0;
     for (auto& knot : fixedKnots) {
       for (int c = 0; c < 2; ++c) {
-        splineKnots[n].x[c] = knot.x;
-        splineKnots[n].y[c] = knot.y;
-        splineKnots[n].t[c] = knot.t;
-        splineKnots[n].s[c] = knot.s;
+        automationKnots[n].x[c] = splineKnots[n].x[c] = knot.x;
+        automationKnots[n].y[c] = splineKnots[n].y[c] = knot.y;
+        automationKnots[n].t[c] = splineKnots[n].t[c] = knot.t;
+        automationKnots[n].s[c] = splineKnots[n].s[c] = knot.s;
       }
       ++n;
     }
@@ -120,14 +121,19 @@ struct SplineParameters
       if (knot.IsEnabled()) {
         for (int c = 0; c < 2; ++c) {
           auto& params = knot.getActiveParameters(c);
-          splineKnots[n].x[c] = params.x->get();
-          splineKnots[n].y[c] = params.y->get();
-          splineKnots[n].t[c] = params.t->get();
-          splineKnots[n].s[c] = params.s->get();
+          automationKnots[n].x[c] = params.x->get();
+          automationKnots[n].y[c] = params.y->get();
+          automationKnots[n].t[c] = params.t->get();
+          automationKnots[n].s[c] = params.s->get();
         }
         ++n;
       }
     }
+
+    if (automator && needsReset()) {
+      automator->reset(spline);
+    }
+
     return { spline, automator };
   }
 };
