@@ -32,7 +32,7 @@ SplineEditor::SplineEditor(
   , rangeTan(parameters.rangeTan)
   , symmetryParameter(symmetryParameter)
 {
-  splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>();
+  splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>(false);
 
   setSize(400, 400);
 
@@ -233,7 +233,9 @@ SplineEditor::paint(Graphics& g)
   if (redrawCurvesFlag) {
     redrawCurvesFlag = false;
 
-    splineDsp = parameters.updateSpline(splineHolder);
+    auto [splineDsp_, unused] = parameters.updateSpline(splineHolder);
+
+    splineDsp = splineDsp_;
 
     if (splineDsp) {
 
@@ -244,7 +246,6 @@ SplineEditor::paint(Graphics& g)
         }
       }
 
-      splineDsp->reset();
       splineDsp->processBlock(inputBuffer, outputBuffer);
     }
     else {

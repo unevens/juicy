@@ -196,7 +196,7 @@ private:
   float yToPixel(float y);
   float yToPixelUnclamped(float y);
 
-  avec::SplineHolder<avec::Spline, Vec2d> splineHolder;
+  avec::SplineHolder<Vec2d> splineHolder;
   avec::SplineInterface<Vec2d>* splineDsp = nullptr;
 
   LinkableParameter<WrappedBoolParameter>* symmetryParameter;

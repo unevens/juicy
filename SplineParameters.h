@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "Linkables.h"
+#include "avec/dsp/Spline.hpp"
 #include <JuceHeader.h>
 #include <array>
 #include <functional>
@@ -94,38 +95,39 @@ struct SplineParameters
                    NormalisableRange<float> rangeTan,
                    std::vector<KnotData> fixedKnots = {});
 
-  template<class SplineHolderClass>
-  typename SplineHolderClass::SplineInterface* updateSpline(
-    SplineHolderClass& splines)
+  template<class Vec>
+  std::pair<avec::SplineInterface<Vec>*, avec::SplineAutomatorInterface<Vec>*>
+  updateSpline(avec::SplineHolder<Vec>& splines)
   {
     int const numKnots = getNumActiveKnots();
-    auto spline = splines.getSpline(numKnots);
+    auto [spline, automator] = splines.getSpline(numKnots);
     if (!spline) {
-      return nullptr;
+      return { nullptr, nullptr };
     }
-    auto splineKnots = spline->getKnots();
+    auto splineKnots = automator ? automator->getKnots() : spline->getKnots();
     int n = 0;
     for (auto& knot : fixedKnots) {
       for (int c = 0; c < 2; ++c) {
-        splineKnots[n].target.x[c] = knot.x;
-        splineKnots[n].target.y[c] = knot.y;
-        splineKnots[n].target.t[c] = knot.t;
-        splineKnots[n].target.s[c] = knot.s;
+        splineKnots[n].x[c] = knot.x;
+        splineKnots[n].y[c] = knot.y;
+        splineKnots[n].t[c] = knot.t;
+        splineKnots[n].s[c] = knot.s;
       }
       ++n;
     }
+
     for (auto& knot : knots) {
       if (knot.IsEnabled()) {
         for (int c = 0; c < 2; ++c) {
           auto& params = knot.getActiveParameters(c);
-          splineKnots[n].target.x[c] = params.x->get();
-          splineKnots[n].target.y[c] = params.y->get();
-          splineKnots[n].target.t[c] = params.t->get();
-          splineKnots[n].target.s[c] = params.s->get();
+          splineKnots[n].x[c] = params.x->get();
+          splineKnots[n].y[c] = params.y->get();
+          splineKnots[n].t[c] = params.t->get();
+          splineKnots[n].s[c] = params.s->get();
         }
         ++n;
       }
     }
-    return spline;
+    return { spline, automator };
   }
 };
