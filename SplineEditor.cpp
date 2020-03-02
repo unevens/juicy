@@ -25,7 +25,7 @@ SplineEditor::SplineEditor(
   , spline(
       parameters,
       apvts,
-      [this]() { OnSplineChange(); },
+      [this]() { onSplineChange(); },
       symmetryParameter)
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
@@ -521,7 +521,7 @@ SplineEditor::setSelectedKnot(int knot)
 }
 
 void
-SplineEditor::OnSplineChange()
+SplineEditor::onSplineChange()
 {
   redrawCurvesFlag = true;
   repaint();

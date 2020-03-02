@@ -168,7 +168,7 @@ private:
 
   VecBuffer<Vec2d> vuMeterBuffer{ 1 };
 
-  void OnSplineChange();
+  void onSplineChange();
 
   int selectedKnot = 0;
 
