@@ -151,6 +151,9 @@ SimpleLookAndFeel::drawRotarySlider(Graphics& g,
                               true);
 
   g.setColour(outline);
+  if (!slider.isEnabled()) {
+    g.setOpacity(0.5f);
+  }
   g.strokePath(
     backgroundArc,
     PathStrokeType(lineW, PathStrokeType::curved, PathStrokeType::rounded));
@@ -167,6 +170,9 @@ SimpleLookAndFeel::drawRotarySlider(Graphics& g,
                            true);
 
     g.setColour(fill);
+    if (!slider.isEnabled()) {
+      g.setOpacity(0.5f);
+    }
     g.strokePath(
       valueArc,
       PathStrokeType(lineW, PathStrokeType::curved, PathStrokeType::rounded));
@@ -180,6 +186,9 @@ SimpleLookAndFeel::drawRotarySlider(Graphics& g,
       arcRadius * std::sin(toAngle - MathConstants<float>::halfPi));
 
   g.setColour(slider.findColour(Slider::thumbColourId));
+  if (!slider.isEnabled()) {
+    g.setOpacity(0.5f);
+  }
   g.fillEllipse(
     Rectangle<float>(thumbWidth, thumbWidth).withCentre(thumbPoint));
 }
