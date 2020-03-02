@@ -332,7 +332,7 @@ SplineEditor::mouseDown(MouseEvent const& event)
   auto [knot, minDistance] = selectKnot(event);
 
   if (knot == -1) {
-    interaction = InteractionType::Movement;
+    interaction = InteractionType::movement;
     prevOffset = offset;
     return;
   }
@@ -346,7 +346,7 @@ SplineEditor::mouseDown(MouseEvent const& event)
   bool hit = false;
 
   if (minDistance <= radius) {
-    interaction = InteractionType::Value;
+    interaction = InteractionType::value;
     params.x->dragStarted();
     params.y->dragStarted();
     hit = true;
@@ -358,26 +358,26 @@ SplineEditor::mouseDown(MouseEvent const& event)
     auto const dt = Point<float>(dx, dy);
 
     if (event.position.getDistanceFrom(knotCoord + dt) <= radius) {
-      interaction = InteractionType::RightTangent;
+      interaction = InteractionType::rightTangent;
       interactionBuffer = params.t->getValue();
       params.t->dragStarted();
       hit = true;
     }
     else if (event.position.getDistanceFrom(knotCoord - dt) <= radius) {
-      interaction = InteractionType::LeftTangent;
+      interaction = InteractionType::leftTangent;
       interactionBuffer = params.t->getValue();
       params.t->dragStarted();
       hit = true;
     }
     else if (event.position.getDistanceFrom(knotCoord -
                                             Point<float>(dy, -dx)) <= radius) {
-      interaction = InteractionType::Smoothing;
+      interaction = InteractionType::smoothing;
       interactionBuffer = params.s->getValue();
       params.s->dragStarted();
       hit = true;
     }
     else {
-      interaction = InteractionType::Movement;
+      interaction = InteractionType::movement;
       prevOffset = offset;
     }
   }
@@ -393,7 +393,7 @@ SplineEditor::mouseDown(MouseEvent const& event)
 void
 SplineEditor::mouseDrag(MouseEvent const& event)
 {
-  if (interaction == InteractionType::Movement) {
+  if (interaction == InteractionType::movement) {
     offset.x = prevOffset.x - event.getDistanceFromDragStartX();
     offset.x = jlimit(0.f, getWidth() * (zoom.x - 1.f), offset.x);
     offset.y = prevOffset.y + event.getDistanceFromDragStartY();
@@ -408,30 +408,30 @@ SplineEditor::mouseDrag(MouseEvent const& event)
 
   switch (interaction) {
 
-    case InteractionType::Value: {
+    case InteractionType::value: {
       float const x = pixelToX(event.position.x);
       float const y = pixelToY(event.position.y);
       params.x->setValueFromGui(x);
       params.y->setValueFromGui(y);
     } break;
 
-    case InteractionType::LeftTangent: {
+    case InteractionType::leftTangent: {
       float const d = tangentDragSpeed * event.getDistanceFromDragStartY();
       params.t->setValueFromGui(interactionBuffer + d);
     } break;
 
-    case InteractionType::RightTangent: {
+    case InteractionType::rightTangent: {
       float const d = tangentDragSpeed * event.getDistanceFromDragStartY();
       params.t->setValueFromGui(interactionBuffer - d);
     } break;
 
-    case InteractionType::Smoothing: {
+    case InteractionType::smoothing: {
       float const d = smoothnessDragSpeed * event.getDistanceFromDragStartX();
       params.s->setValueFromGui(interactionBuffer + d);
     } break;
 
     default:
-    case InteractionType::Movement:
+    case InteractionType::movement:
       break;
   }
 }
@@ -439,7 +439,7 @@ SplineEditor::mouseDrag(MouseEvent const& event)
 void
 SplineEditor::mouseUp(MouseEvent const& event)
 {
-  if (interaction == InteractionType::Movement) {
+  if (interaction == InteractionType::movement) {
     return;
   }
 
@@ -447,25 +447,25 @@ SplineEditor::mouseUp(MouseEvent const& event)
 
   switch (interaction) {
 
-    case InteractionType::Value: {
+    case InteractionType::value: {
       params.x->dragEnded();
       params.y->dragEnded();
     } break;
 
-    case InteractionType::LeftTangent: {
+    case InteractionType::leftTangent: {
       params.t->dragEnded();
     } break;
 
-    case InteractionType::RightTangent: {
+    case InteractionType::rightTangent: {
       params.t->dragEnded();
     } break;
 
-    case InteractionType::Smoothing: {
+    case InteractionType::smoothing: {
       params.s->dragEnded();
     } break;
 
     default:
-    case InteractionType::Movement:
+    case InteractionType::movement:
       break;
   }
 }

@@ -174,14 +174,14 @@ private:
 
   enum class InteractionType
   {
-    Movement,
-    Value,
-    LeftTangent,
-    RightTangent,
-    Smoothing
+    movement,
+    value,
+    leftTangent,
+    rightTangent,
+    smoothing
   };
 
-  InteractionType interaction = InteractionType::Movement;
+  InteractionType interaction = InteractionType::movement;
   int interactingChannel = 0;
 
   float interactionBuffer = 0.f;
