@@ -78,22 +78,35 @@ SimpleLookAndFeel::drawToggleButton(Graphics& g,
 {
   auto fontSize = simpleFontSize;
 
-  drawTickBox(g,
-              button,
-              4.0f,
-              (button.getHeight() - simpleToggleTickWidth) * 0.5f,
-              simpleToggleTickWidth,
-              simpleToggleTickWidth,
-              button.getToggleState(),
-              button.isEnabled(),
-              shouldDrawButtonAsHighlighted,
-              shouldDrawButtonAsDown);
+  Rectangle<float> tickBounds(4.0f,
+                              (button.getHeight() - simpleToggleTickWidth) *
+                                0.5f,
+                              simpleToggleTickWidth,
+                              simpleToggleTickWidth);
+
+  g.setColour(button.findColour(ToggleButton::tickDisabledColourId));
+  if (!button.isEnabled()) {
+    g.setOpacity(0.5f);
+  }
+  g.drawRoundedRectangle(tickBounds, 4.0f, 1.0f);
+
+  if (button.getToggleState()) {
+    g.setColour(button.findColour(ToggleButton::tickColourId));
+    if (!button.isEnabled()) {
+      g.setOpacity(0.5f);
+    }
+    auto tick = getTickShape(0.75f);
+    g.fillPath(
+      tick,
+      tick.getTransformToScaleToFit(tickBounds.reduced(4, 5).toFloat(), false));
+  }
 
   g.setColour(button.findColour(ToggleButton::textColourId));
   g.setFont(Font(simpleFontSize, simpleFontStyle));
 
-  if (!button.isEnabled())
+  if (!button.isEnabled()) {
     g.setOpacity(0.5f);
+  }
 
   g.drawFittedText(button.getButtonText(),
                    button.getLocalBounds()
@@ -103,22 +116,23 @@ SimpleLookAndFeel::drawToggleButton(Graphics& g,
                    10);
 }
 
-
 void
 SimpleLookAndFeel::drawRotarySlider(Graphics& g,
-                                 int x,
-                                 int y,
-                                 int width,
-                                 int height,
-                                 float sliderPos,
-                                 const float rotaryStartAngle,
-                                 const float rotaryEndAngle,
-                                 Slider& slider)
+                                    int x,
+                                    int y,
+                                    int width,
+                                    int height,
+                                    float sliderPos,
+                                    const float rotaryStartAngle,
+                                    const float rotaryEndAngle,
+                                    Slider& slider)
 {
   auto outline = slider.findColour(Slider::rotarySliderOutlineColourId);
   auto fill = slider.findColour(Slider::rotarySliderFillColourId);
 
-  auto bounds = Rectangle<int>(x, y, width, height).toFloat().reduced(simpleRotarySliderOffset);
+  auto bounds = Rectangle<int>(x, y, width, height)
+                  .toFloat()
+                  .reduced(simpleRotarySliderOffset);
 
   auto radius = jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
   auto toAngle =
