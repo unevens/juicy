@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Attachments.h"
 #include "Linkables.h"
 #include "SplineParameters.h"
-#include "avec/dsp/Spline.hpp"
+#include "adsp/Spline.hpp"
 #include <JuceHeader.h>
 
 #ifndef JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS
@@ -196,8 +196,8 @@ private:
   float yToPixel(float y);
   float yToPixelUnclamped(float y);
 
-  avec::SplineHolder<Vec2d> splineHolder;
-  avec::SplineInterface<Vec2d>* splineDsp = nullptr;
+  adsp::SplineHolder<Vec2d> splineHolder;
+  adsp::SplineInterface<Vec2d>* splineDsp = nullptr;
 
   LinkableParameter<WrappedBoolParameter>* symmetryParameter;
 

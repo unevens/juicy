@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "Linkables.h"
-#include "avec/dsp/Spline.hpp"
+#include "adsp/Spline.hpp"
 #include <JuceHeader.h>
 #include <array>
 #include <functional>
@@ -96,8 +96,8 @@ struct SplineParameters
                    std::vector<KnotData> fixedKnots = {});
 
   template<class Vec>
-  std::pair<avec::SplineInterface<Vec>*, avec::SplineAutomatorInterface<Vec>*>
-  updateSpline(avec::SplineHolder<Vec>& splines)
+  std::pair<adsp::SplineInterface<Vec>*, adsp::SplineAutomatorInterface<Vec>*>
+  updateSpline(adsp::SplineHolder<Vec>& splines)
   {
     int const numKnots = getNumActiveKnots();
     auto [spline, automator] = splines.getSpline(numKnots);
