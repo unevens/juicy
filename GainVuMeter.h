@@ -32,7 +32,7 @@ public:
   GainVuMeter(
     std::array<std::atomic<float>*, 2> source,
     float range = 36.f,
-    std::function<float(float)> scaling = [](float x) { return x; },
+    std::function<float(float)> scaling = [](float x) { return std::sqrt(x); },
     Colour lowColour = Colours::green,
     Colour highColour = Colours::red,
     Colour backgroundColour = Colours::black);
