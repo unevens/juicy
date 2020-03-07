@@ -18,6 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include <JuceHeader.h>
 
+/**
+ * A view class that lets you use either a AudioParameterBool or an
+ * AudioParameterFloat as it was a AudioParameterBool. Its use case scenario is
+ * when you only use float parameters as a way to communicate with the host, and
+ * dynamically change their meaning.
+ */
+
 class WrappedBoolParameter
 {
   AudioParameterBool* boolParameter;

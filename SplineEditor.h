@@ -22,9 +22,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "adsp/Spline.hpp"
 #include <JuceHeader.h>
 
+/**
+ * A gui for the splines in
+ * https://github.com/unevens/audio-dsp/blob/master/adsp/Spline.hpp
+ */
+
 #ifndef JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS
 #define JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS 17
-#endif 
+#endif
 
 struct SplineAttachments
 {

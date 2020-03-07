@@ -22,6 +22,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <array>
 #include <functional>
 
+/**
+ * Linkable parameters for the splines in
+ * https://github.com/unevens/audio-dsp/blob/master/adsp/Spline.hpp
+ */
+
 struct SplineParameters
 {
   struct KnotData

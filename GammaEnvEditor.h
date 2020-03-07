@@ -21,6 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <JuceHeader.h>
 #include <array>
 
+/**
+ * Linkable parameters and a Component to control a GammaEnv envelope follower
+ * in either left/right or mid/side stereo. See
+ * https://github.com/unevens/audio-dsp/blob/master/adsp/GammaEnv.hpp
+ */
+
 struct GammaEnvParameters
 {
   LinkableParameter<AudioParameterFloat> attack;

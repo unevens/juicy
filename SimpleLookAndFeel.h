@@ -16,6 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include <JuceHeader.h>
 
+/**
+ * A simple LookAndFeel that lets you do some simple customization through its
+ * public members, and does not shrink ToggleButtons and RotarySliders as much
+ * as LookAndFeel_V4.
+ */
+
 class SimpleLookAndFeel : public LookAndFeel_V4
 {
 public:

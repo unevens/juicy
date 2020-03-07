@@ -20,6 +20,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "WrappedBoolParameter.h"
 #include <array>
 
+/**
+ * These classes are designed to have different values for a setting of a
+ * plugin on the left and the right channel. To do that, two parameters are
+ * copled together. To avoid having to set them both when different values on
+ * each channels are not desired, a bool parameter is used: when it is set to
+ * true, the two parameters are "linked", meaning that the value of the first
+ * one is used for both channels; when the bool parameter is false, each channel
+ * has its own value.
+ */
+
 template<class ParameterClass>
 struct LinkableParameter
 {

@@ -19,6 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <JuceHeader.h>
 #include <array>
 
+/**
+ * A simple Component implementing a gain VU meter, useful to show gain
+ * reduction in dynamic processors.
+ */
+
 class GainVuMeter
   : public Component
   , public Timer

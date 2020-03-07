@@ -20,6 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "WrappedBoolParameter.h"
 #include "oversimple/AsyncOversampling.hpp"
 
+/**
+ * Parameters and attachmen for to use the oversampling functionality wrapped in
+ * https://github.com/unevens/oversimple/blob/master/oversimple/Oversampling.hpp
+ */
 struct OversamplingParameters
 {
   RangedAudioParameter* order;
