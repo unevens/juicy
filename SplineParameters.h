@@ -85,7 +85,7 @@ struct SplineParameters
 
   SplineParameters(
     String splinePrefix,
-    std::vector<std::unique_ptr<RangedAudioParameter>>& parametersForApvts,
+    AudioProcessorValueTreeState::ParameterLayout& layout,
     int numKnots,
     NormalisableRange<float> rangeX,
     NormalisableRange<float> rangeY,

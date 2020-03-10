@@ -63,7 +63,7 @@ SplineParameters::needsReset()
 
 SplineParameters::SplineParameters(
   String splinePrefix,
-  std::vector<std::unique_ptr<RangedAudioParameter>>& parametersForApvts,
+  AudioProcessorValueTreeState::ParameterLayout& layout,
   int numKnots,
   NormalisableRange<float> rangeX,
   NormalisableRange<float> rangeY,
@@ -77,15 +77,14 @@ SplineParameters::SplineParameters(
 {
   auto const createFloatParameter =
     [&](String name, float value, NormalisableRange<float> range) {
-      parametersForApvts.push_back(std::unique_ptr<RangedAudioParameter>(
-        new AudioParameterFloat(name, name, range, value)));
-
-      return static_cast<AudioParameterFloat*>(parametersForApvts.back().get());
+      auto p = new AudioParameterFloat(name, name, range, value);
+      layout.add(std::unique_ptr<RangedAudioParameter>(p));
+      return static_cast<AudioParameterFloat*>(p);
     };
 
   auto const createBoolParameter = [&](String name, float value) {
     WrappedBoolParameter wrapper;
-    parametersForApvts.push_back(wrapper.createParameter(name, value));
+    layout.add(wrapper.createParameter(name, value));
     return wrapper;
   };
 
