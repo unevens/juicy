@@ -18,10 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include "Attachments.h"
 #include "WrappedBoolParameter.h"
-#include "oversimple/AsyncOversampling.hpp"
+#include "oversimple/Oversampling.hpp"
 
 /**
- * Parameters and attachmen for to use the oversampling functionality wrapped in
+ * Parameters and attachments to use the Oversimple oversampling wrappers
  * https://github.com/unevens/oversimple/blob/master/oversimple/Oversampling.hpp
  */
 struct OversamplingParameters
@@ -30,43 +30,65 @@ struct OversamplingParameters
   WrappedBoolParameter linearPhase;
 };
 
+template<typename Scalar = double>
 class OversamplingAttachments
 {
-  oversimple::AsyncOversampling* asyncOversampling;
-
   std::unique_ptr<FloatAttachment> orderAttachment;
   std::unique_ptr<BoolAttachment> linearPhaseAttachment;
 
 public:
-  OversamplingAttachments(AudioProcessorValueTreeState& apvts,
-                          oversimple::AsyncOversampling& asyncOversampling_,
-                          OversamplingParameters& parameters)
-    : asyncOversampling(&asyncOversampling_)
+  OversamplingAttachments(
+    OversamplingParameters& parameters,
+    AudioProcessorValueTreeState& apvts,
+    AudioProcessor* processor,
+    std::unique_ptr<oversimple::Oversampling<Scalar>>* oversampling,
+    oversimple::OversamplingSettings* oversamplingSettings,
+    std::mutex* oversamplingMutex)
   {
     linearPhaseAttachment = std::make_unique<BoolAttachment>(
-      apvts, parameters.linearPhase.getID(), [this]() {
+      apvts,
+      parameters.linearPhase.getID(),
+      [this,
+       processor,
+       oversampling,
+       oversamplingSettings,
+       oversamplingMutex]() {
         if (!linearPhaseAttachment) {
           return;
         }
-        bool value = linearPhaseAttachment->getValue();
-        asyncOversampling->submitMessage(
-          [=](oversimple::OversamplingSettings& oversampling) {
-            oversampling.linearPhase = value;
-          });
+
+        const std::lock_guard<std::mutex> lock(*oversamplingMutex);
+        processor->suspendProcessing(true);
+
+        oversamplingSettings->linearPhase = linearPhaseAttachment->getValue();
+
+        *oversampling = std::make_unique<oversimple::Oversampling<Scalar>>(
+          *oversamplingSettings);
+
+        processor->suspendProcessing(false);
       });
 
     orderAttachment = std::make_unique<FloatAttachment>(
       apvts,
       parameters.order->paramID,
-      [this]() {
+      [this,
+       processor,
+       oversampling,
+       oversamplingSettings,
+       oversamplingMutex]() {
         if (!orderAttachment) {
           return;
         }
-        int order = (int)std::round(orderAttachment->getValue());
-        asyncOversampling->submitMessage(
-          [=](oversimple::OversamplingSettings& oversampling) {
-            oversampling.order = order;
-          });
+
+        const std::lock_guard<std::mutex> lock(*oversamplingMutex);
+        processor->suspendProcessing(true);
+
+        oversamplingSettings->order = orderAttachment->getValue();
+
+        *oversampling = std::make_unique<oversimple::Oversampling<Scalar>>(
+          *oversamplingSettings);
+
+        processor->suspendProcessing(false);
       },
       NormalisableRange<float>(0.f, 5.f, 1.f));
   }
