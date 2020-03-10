@@ -30,7 +30,7 @@ struct OversamplingParameters
   WrappedBoolParameter linearPhase;
 };
 
-template<typename Scalar = double>
+template<typename Scalar, class Mutex>
 class OversamplingAttachments
 {
   std::unique_ptr<FloatAttachment> orderAttachment;
@@ -43,7 +43,7 @@ public:
     AudioProcessor* processor,
     std::unique_ptr<oversimple::Oversampling<Scalar>>* oversampling,
     oversimple::OversamplingSettings* oversamplingSettings,
-    std::mutex* oversamplingMutex)
+    Mutex* oversamplingMutex)
   {
     linearPhaseAttachment = std::make_unique<BoolAttachment>(
       apvts,
@@ -57,7 +57,9 @@ public:
           return;
         }
 
-        const std::lock_guard<std::mutex> lock(*oversamplingMutex);
+        auto const guard =
+          std::lock_guard<std::recursive_mutex>(*oversamplingMutex);
+
         processor->suspendProcessing(true);
 
         oversamplingSettings->linearPhase = linearPhaseAttachment->getValue();
@@ -80,7 +82,9 @@ public:
           return;
         }
 
-        const std::lock_guard<std::mutex> lock(*oversamplingMutex);
+        auto const guard =
+          std::lock_guard<std::recursive_mutex>(*oversamplingMutex);
+
         processor->suspendProcessing(true);
 
         oversamplingSettings->order = orderAttachment->getValue();
