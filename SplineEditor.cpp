@@ -31,9 +31,8 @@ SplineEditor::SplineEditor(
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
   , symmetryParameter(symmetryParameter)
+  , splineDsp(avec::Aligned<Spline>::make())
 {
-  splineHolder.initialize<JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>(false);
-
   setSize(400, 400);
 
   areaInWhichToDrawKnots = getBounds();
@@ -124,14 +123,16 @@ SplineEditor::paint(Graphics& g)
     }
   }
 
+  int const numKnots = parameters.updateSpline(*splineDsp);
+
   // vumeter
 
-  if (vuMeter[0] && vuMeter[1] && splineDsp) {
+  if (vuMeter[0] && vuMeter[1]) {
     vuMeterBuffer[0][0] = vuMeter[0]->load();
     vuMeterBuffer[0][1] = vuMeter[1]->load();
     int const x0 = std::round(xToPixel(vuMeterBuffer[0][0]));
     int const x1 = std::round(xToPixel(vuMeterBuffer[0][1]));
-    splineDsp->processBlock(vuMeterBuffer, vuMeterBuffer);
+    splineDsp->processBlock(vuMeterBuffer, vuMeterBuffer, numKnots);
     int const y0 = std::round(yToPixel(vuMeterBuffer[0][0]));
     int const y1 = std::round(yToPixel(vuMeterBuffer[0][1]));
     g.setColour(vuMeterColours[1]);
@@ -233,26 +234,14 @@ SplineEditor::paint(Graphics& g)
   if (redrawCurvesFlag) {
     redrawCurvesFlag = false;
 
-    auto [splineDsp_, unused] = parameters.updateSpline(splineHolder);
-
-    splineDsp = splineDsp_;
-
-    if (splineDsp) {
-
-      if (symmetryParameter) {
-        for (int c = 0; c < 2; ++c) {
-          splineDsp->setIsSymmetric(symmetryParameter->get(c)->getValue() >=
-                                    0.5f);
-        }
+    if (symmetryParameter) {
+      for (int c = 0; c < 2; ++c) {
+        splineDsp->setIsSymmetric(symmetryParameter->get(c)->getValue() >=
+                                  0.5f);
       }
-
-      splineDsp->processBlock(inputBuffer, outputBuffer);
     }
-    else {
-      std::copy(&inputBuffer(0),
-                &inputBuffer(0) + inputBuffer.getScalarSize(),
-                &outputBuffer(0));
-    }
+    splineDispatcher.processBlock(
+      *splineDsp, inputBuffer, outputBuffer, numKnots);
   }
 
   for (int c = 1; c >= 0; --c) {

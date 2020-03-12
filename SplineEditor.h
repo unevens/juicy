@@ -201,8 +201,12 @@ private:
   float yToPixel(float y);
   float yToPixelUnclamped(float y);
 
-  adsp::SplineHolder<Vec2d> splineHolder;
-  adsp::SplineInterface<Vec2d>* splineDsp = nullptr;
+  using Spline = adsp::Spline<Vec2d, JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>;
+
+  aligned_ptr<Spline> splineDsp;
+
+  adsp::SplineDispatcher<adsp::Spline, Vec2d, JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>
+    splineDispatcher;
 
   LinkableParameter<WrappedBoolParameter>* symmetryParameter;
 

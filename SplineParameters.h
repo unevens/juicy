@@ -100,17 +100,11 @@ struct SplineParameters
                    NormalisableRange<float> rangeTan,
                    std::vector<KnotData> fixedKnots = {});
 
-  template<class Vec>
-  std::pair<adsp::SplineInterface<Vec>*, adsp::SplineAutomatorInterface<Vec>*>
-  updateSpline(adsp::SplineHolder<Vec>& splines)
+  template<class Vec, int maxNumKnots>
+  int updateSpline(adsp::AutoSpline<Vec, maxNumKnots>& spline)
   {
-    int const numKnots = getNumActiveKnots();
-    auto [spline, automator] = splines.getSpline(numKnots);
-    if (!spline) {
-      return { nullptr, nullptr };
-    }
-    auto splineKnots = spline->getKnots();
-    auto automationKnots = automator ? automator->getKnots() : splineKnots;
+    auto splineKnots = spline.spline.knots;
+    auto automationKnots = spline.automationKnots;
     int n = 0;
     for (auto& knot : fixedKnots) {
       for (int c = 0; c < 2; ++c) {
@@ -135,10 +129,41 @@ struct SplineParameters
       }
     }
 
-    if (automator && needsReset()) {
-      automator->reset(spline);
+    if (needsReset()) {
+      spline.reset();
     }
 
-    return { spline, automator };
+    return n;
+  }
+
+  template<class Vec, int maxNumKnots>
+  int updateSpline(adsp::Spline<Vec, maxNumKnots>& spline)
+  {
+    auto splineKnots = spline.knots;
+    int n = 0;
+    for (auto& knot : fixedKnots) {
+      for (int c = 0; c < 2; ++c) {
+        splineKnots[n].x[c] = knot.x;
+        splineKnots[n].y[c] = knot.y;
+        splineKnots[n].t[c] = knot.t;
+        splineKnots[n].s[c] = knot.s;
+      }
+      ++n;
+    }
+
+    for (auto& knot : knots) {
+      if (knot.IsEnabled()) {
+        for (int c = 0; c < 2; ++c) {
+          auto& params = knot.getActiveParameters(c);
+          splineKnots[n].x[c] = params.x->get();
+          splineKnots[n].y[c] = params.y->get();
+          splineKnots[n].t[c] = params.t->get();
+          splineKnots[n].s[c] = params.s->get();
+        }
+        ++n;
+      }
+    }
+
+    return n;
   }
 };
