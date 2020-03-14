@@ -236,8 +236,8 @@ SplineEditor::paint(Graphics& g)
 
     if (symmetryParameter) {
       for (int c = 0; c < 2; ++c) {
-        splineDsp->setIsSymmetric(symmetryParameter->get(c)->getValue() >=
-                                  0.5f);
+        splineDsp->setIsSymmetric(
+          c, symmetryParameter->get(c)->getValue() >= 0.5f);
       }
     }
     splineDispatcher.processBlock(
