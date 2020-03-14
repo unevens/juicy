@@ -41,7 +41,7 @@ SplineParameters::LinkableKnotParameters::getActiveParameters(int channel)
 int
 SplineParameters::getNumActiveKnots()
 {
-  int numKnots = fixedKnots.size();
+  int numKnots = (int)fixedKnots.size();
   for (auto& knot : knots) {
     if (knot.IsEnabled()) {
       ++numKnots;
@@ -109,7 +109,7 @@ SplineParameters::SplineParameters(
                            rangeTan),
 
       createFloatParameter(
-        prefix + "Smoothness" + postfix, 1.0, { 0.0, 1.0, 0.01 })
+        prefix + "Smoothness" + postfix, 1.f, { 0.f, 1.f, 0.01f })
     };
   };
 

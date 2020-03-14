@@ -27,13 +27,13 @@ class SimpleLookAndFeel : public LookAndFeel_V4
 public:
   SimpleLookAndFeel();
 
-  int simpleFontSize = 18;
-  int simpleSliderLabelFontSize = 15;
+  float simpleFontSize = 18.f;
+  float simpleSliderLabelFontSize = 15.f;
   Font::FontStyleFlags simpleFontStyle = Font::bold;
 
-  int simpleToggleTickWidth = 18;
+  float simpleToggleTickWidth = 18.f;
 
-  int simpleRotarySliderOffset = 10;
+  float simpleRotarySliderOffset = 10.f;
 
   Colour frontColour = Colours::white;
   Colour sliderFillColour = Colours::blue;
@@ -44,7 +44,7 @@ public:
 
   Font getTextButtonFont(TextButton&, int buttonHeight) override
   {
-    return Font(simpleFontSize, simpleFontStyle);
+    return Font((float)simpleFontSize, simpleFontStyle);
   }
 
   Font getLabelFont(Label& label) override;

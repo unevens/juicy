@@ -57,7 +57,7 @@ SplineEditor::paint(Graphics& g)
   // grid vertical lines
   {
     float const cellWidth =
-      (pixelToX(getWidth()) - pixelToX(0.f)) / (float)numGridLines.x;
+      (pixelToX((float)getWidth()) - pixelToX(0.f)) / (float)numGridLines.x;
 
     float x = cellWidth * std::ceil(pixelToX(0) / cellWidth);
 
@@ -93,8 +93,8 @@ SplineEditor::paint(Graphics& g)
   // grid horizontal lines
   {
     float const cellHeight =
-      (pixelToY(0.f) - pixelToY(getHeight())) / (float)numGridLines.y;
-    float y = cellHeight * std::ceil(pixelToY(getHeight()) / cellHeight);
+      (pixelToY(0.f) - pixelToY((float)getHeight())) / (float)numGridLines.y;
+    float y = cellHeight * std::ceil(pixelToY((float)getHeight()) / cellHeight);
 
     for (int i = 0; i < numGridLines.y; ++i) {
 
@@ -130,11 +130,11 @@ SplineEditor::paint(Graphics& g)
   if (vuMeter[0] && vuMeter[1]) {
     vuMeterBuffer[0][0] = vuMeter[0]->load();
     vuMeterBuffer[0][1] = vuMeter[1]->load();
-    int const x0 = std::round(xToPixel(vuMeterBuffer[0][0]));
-    int const x1 = std::round(xToPixel(vuMeterBuffer[0][1]));
+    float const x0 = std::round(xToPixel((float)vuMeterBuffer[0][0]));
+    float const x1 = std::round(xToPixel((float)vuMeterBuffer[0][1]));
     splineDsp->processBlock(vuMeterBuffer, vuMeterBuffer, numKnots);
-    int const y0 = std::round(yToPixel(vuMeterBuffer[0][0]));
-    int const y1 = std::round(yToPixel(vuMeterBuffer[0][1]));
+    float const y0 = std::round(yToPixel((float)vuMeterBuffer[0][0]));
+    float const y1 = std::round(yToPixel((float)vuMeterBuffer[0][1]));
     g.setColour(vuMeterColours[1]);
     g.drawLine(x1, y1, x1, (float)getHeight());
     g.drawLine(0.f, y1, x1, y1);
@@ -247,14 +247,16 @@ SplineEditor::paint(Graphics& g)
   for (int c = 1; c >= 0; --c) {
     Path path;
 
-    float prevY = yToPixel(outputBuffer[0][c]);
+    float prevY = yToPixel((float)outputBuffer[0][c]);
 
     for (int i = 1; i < getWidth(); ++i) {
 
-      float const y = jlimit(
-        -10.f, getHeight() + 10.f, yToPixelUnclamped(outputBuffer[i][c]));
+      float const y = jlimit(-10.f,
+                             getHeight() + 10.f,
+                             yToPixelUnclamped((float)outputBuffer[i][c]));
 
-      path.addLineSegment(Line<float>(i - 1, prevY, i, y), lineThickness);
+      path.addLineSegment(Line<float>((float)(i - 1), prevY, (float)i, y),
+                          lineThickness);
 
       prevY = y;
     }
@@ -266,8 +268,8 @@ SplineEditor::paint(Graphics& g)
 
   if (isMouseInside) {
 
-    float const x = pixelToX(mousePosition.x);
-    float const y = pixelToY(mousePosition.y);
+    float const x = pixelToX((float)mousePosition.x);
+    float const y = pixelToY((float)mousePosition.y);
 
     String const text =
       "x=" + String(x, 2) + xSuffix + ", y=" + String(y, 2) + ySuffix;
@@ -288,7 +290,7 @@ SplineEditor::resized()
 SplineEditor::KnotSelectionResult
 SplineEditor::selectKnot(MouseEvent const& event)
 {
-  float maxDistance = getWidth() + getHeight();
+  float maxDistance = (float)getWidth() + (float)getHeight();
   float minDistances[2] = { maxDistance, maxDistance };
   int knots[2] = { -1, -1 };
   Point<float> knotCoords[2];
@@ -392,8 +394,8 @@ SplineEditor::mouseDrag(MouseEvent const& event)
 
   auto& params = spline.knots[selectedKnot].parameters[interactingChannel];
 
-  float constexpr tangentDragSpeed = 0.030625;
-  float constexpr smoothnessDragSpeed = 0.005;
+  float constexpr tangentDragSpeed = 0.030625f;
+  float constexpr smoothnessDragSpeed = 0.005f;
 
   switch (interaction) {
 
@@ -561,7 +563,7 @@ SplineEditor::setupSplineInputBuffer()
   outputBuffer.setNumSamples(getWidth());
 
   for (int i = 0; i < getWidth(); ++i) {
-    inputBuffer[i] = pixelToX(i);
+    inputBuffer[i] = pixelToX((float)i);
   }
 
   redrawCurvesFlag = true;
@@ -690,12 +692,12 @@ SplineKnotEditor::resized()
   int const rowHeight = getHeight() / 4;
 
   float const widthFactor = getWidth() / 598.f;
-  int const selectedWidth = (2.f / 5.f) * getWidth();
+  int const selectedWidth = (int)((2.f / 5.f) * (float)getWidth());
 
   label.setTopLeftPosition(0, 0);
-  label.setSize(130 * widthFactor, rowHeight);
-  selectedKnot.setTopLeftPosition(130 * widthFactor, rowHeight * 0.1);
-  selectedKnot.setSize(60, rowHeight * 0.8);
+  label.setSize((int)(130 * widthFactor), rowHeight);
+  selectedKnot.setTopLeftPosition((int)(130 * widthFactor), rowHeight / 10);
+  selectedKnot.setSize(60, (int)(rowHeight * 0.8));
 
   Grid grid;
   using Track = Grid::TrackInfo;
@@ -705,7 +707,7 @@ SplineKnotEditor::resized()
   grid.items = { GridItem(enabled.getControl()),
                  GridItem(linked.getControl()) };
 
-  int const offset = 130 * widthFactor + 60 + 30 * widthFactor;
+  int const offset = (int)(130 * widthFactor + 60 + 30 * widthFactor);
   grid.performLayout({ offset, 0, getWidth() - offset, rowHeight });
 
   int const secondRow = rowHeight;
@@ -717,13 +719,14 @@ SplineKnotEditor::resized()
     left += width - 1;
   };
 
-  resize(channelLabels, 50 * widthFactor);
+  resize(channelLabels, (int)(50 * widthFactor));
 
   if (!x || !y || !s || !t) {
     return;
   }
 
-  int width = std::floor(((float)getWidth() - 50 * widthFactor + 4.f) / 4.f);
+  int const width =
+    (int)std::floor(((float)getWidth() - 50 * widthFactor + 4.f) / 4.f);
 
   resize(*x, width);
   resize(*y, width);
@@ -750,14 +753,14 @@ SplineKnotEditor::setSelectedKnot(int newKnotIndex, bool forceUpdate)
 }
 
 void
-SplineKnotEditor::setTableSettings(LinkableControlTable tableSettings)
+SplineKnotEditor::setTableSettings(LinkableControlTable settings)
 {
-  this->tableSettings = tableSettings;
-  channelLabels.tableSettings = tableSettings;
-  x->tableSettings = tableSettings;
-  y->tableSettings = tableSettings;
-  t->tableSettings = tableSettings;
-  s->tableSettings = tableSettings;
+  tableSettings = settings;
+  channelLabels.tableSettings = settings;
+  x->tableSettings = settings;
+  y->tableSettings = settings;
+  t->tableSettings = settings;
+  s->tableSettings = settings;
 }
 
 void
@@ -776,8 +779,6 @@ SplineKnotEditor::setKnot(int newKnotIndex, bool forceUpdate)
 
   linked.setParameter(linkedParamID);
   enabled.setParameter(enabledParamID);
-
-  bool isLinked = apvts.getParameter(linkedParamID)->getValue() >= 0.5f;
 
   if (x) {
     removeChildComponent(x.get());

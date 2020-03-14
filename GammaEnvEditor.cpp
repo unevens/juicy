@@ -52,10 +52,10 @@ GammaEnvEditor::resized()
 
   int left = 0;
 
-  auto const resize = [&](auto& component, int width) {
-    component.setTopLeftPosition(left, 0.f);
-    component.setSize(width, getHeight());
-    left += width - 1;
+  auto const resize = [&](auto& component, float width) {
+    component.setTopLeftPosition(left, 0);
+    component.setSize((int)width, getHeight());
+    left += (int)width - 1;
   };
 
   resize(channelLabels, 50 * widthFactor);

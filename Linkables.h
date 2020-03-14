@@ -76,7 +76,7 @@ struct LinkableControlTable
 
   void paintTable(Graphics& g, int width, int height, bool hasLinked)
   {
-    int const rowHeight = hasLinked ? height / 4.f : height / 3.f;
+    int const rowHeight = (int)(hasLinked ? height / 4.f : height / 3.f);
 
     g.fillAll(backgroundColour);
 
@@ -174,13 +174,14 @@ public:
       grid.templateRows.add(Track(1_fr));
     }
 
-    int const rowHeight = linked ? (getHeight()) / 4.f : (getHeight()) / 3.f;
+    int const rowHeight =
+      (int)(linked ? (getHeight()) / 4.f : (getHeight()) / 3.f);
 
     constexpr int controlGap = std::is_same_v<Control, Slider> ? 0 : 4;
 
-    int const witdh = std::is_same_v<Control, ToggleButton>
-                        ? 26
-                        : getWidth() - 2 * tableSettings.gap;
+    float const witdh = (float)std::is_same_v<Control, ToggleButton>
+                          ? 26
+                          : getWidth() - 2 * tableSettings.gap;
 
     grid.items = { GridItem(label)
                      .withWidth(getWidth() - 2 * tableSettings.gap)
@@ -188,12 +189,12 @@ public:
                      .withJustifySelf(GridItem::JustifySelf::center),
                    GridItem(controls[0].getControl())
                      .withWidth(witdh)
-                     .withHeight(rowHeight - 2 * controlGap)
+                     .withHeight(rowHeight - 2.f * controlGap)
                      .withAlignSelf(GridItem::AlignSelf::center)
                      .withJustifySelf(GridItem::JustifySelf::center),
                    GridItem(controls[1].getControl())
                      .withWidth(witdh)
-                     .withHeight(rowHeight - 2 * controlGap)
+                     .withHeight(rowHeight - 2.f * controlGap)
                      .withAlignSelf(GridItem::AlignSelf::center)
                      .withJustifySelf(GridItem::JustifySelf::center) };
 
@@ -313,13 +314,13 @@ public:
 
     float y = rowHeight + rowGap;
     for (int i = 0; i < 2; ++i) {
-      labels[i].setTopLeftPosition(0, y);
-      labels[i].setSize(getWidth(), rowHeight);
+      labels[i].setTopLeftPosition(0, (int)y);
+      labels[i].setSize(getWidth(), (int)rowHeight);
       y += rowHeight + rowGap;
     }
     if (linkLabel) {
-      linkLabel->setTopLeftPosition(0, y);
-      linkLabel->setSize(getWidth(), rowHeight);
+      linkLabel->setTopLeftPosition(0, (int)y);
+      linkLabel->setSize(getWidth(), (int)rowHeight);
     }
   }
 

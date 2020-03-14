@@ -87,7 +87,7 @@ public:
 
         processor->suspendProcessing(true);
 
-        oversamplingSettings->order = orderAttachment->getValue();
+        oversamplingSettings->order = (int)orderAttachment->getValue();
 
         *oversampling = std::make_unique<oversimple::Oversampling<Scalar>>(
           *oversamplingSettings);

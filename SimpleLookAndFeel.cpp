@@ -76,13 +76,11 @@ SimpleLookAndFeel::drawToggleButton(Graphics& g,
                                     bool shouldDrawButtonAsHighlighted,
                                     bool shouldDrawButtonAsDown)
 {
-  auto fontSize = simpleFontSize;
-
-  Rectangle<float> tickBounds(4.0f,
-                              (button.getHeight() - simpleToggleTickWidth) *
-                                0.5f,
-                              simpleToggleTickWidth,
-                              simpleToggleTickWidth);
+  Rectangle<float> tickBounds(
+    4.0f,
+    ((float)button.getHeight() - simpleToggleTickWidth) * 0.5f,
+    simpleToggleTickWidth,
+    simpleToggleTickWidth);
 
   g.setColour(button.findColour(ToggleButton::tickDisabledColourId));
   if (!button.isEnabled()) {
