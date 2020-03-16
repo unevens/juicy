@@ -116,10 +116,18 @@ GainVuMeter::paint(Graphics& g)
       g.fillRect(left, halfHeight, dx, -halfHeight * y);
     }
 
+    constexpr float minMaxEdge = 4.f;
+
     g.setGradientFill(topGradient);
     float const maxY = scaling(jmin(1.f, maxValue[c] / range));
     float const maxYCoord = halfHeight * (1.f - maxY);
-    g.drawLine(left, maxYCoord, left + dx, maxYCoord, 1);
+
+    if (maxYCoord < minMaxEdge) {
+      g.fillRect(left, 0.f, dx, minMaxEdge);
+    }
+    else {
+      g.drawLine(left, maxYCoord, left + dx, maxYCoord, 1);
+    }
 
     if (maxYCoord >= 24 && maxYCoord < halfHeight - 20) {
       g.drawText(String(maxValue[c], 1),
@@ -130,7 +138,14 @@ GainVuMeter::paint(Graphics& g)
     g.setGradientFill(bottomGradient);
     float const minY = scaling(std::abs(jmax(-1.f, minValue[c] / range)));
     float const minYCoord = halfHeight * (1.f + minY);
-    g.drawLine(left, minYCoord, left + dx, minYCoord, 1);
+
+    float const minRectangleStart = (float)getHeight() - minMaxEdge;
+    if (minYCoord > minRectangleStart) {
+      g.fillRect(left, minRectangleStart, dx, minMaxEdge);
+    }
+    else {
+      g.drawLine(left, minYCoord, left + dx, minYCoord, 1);
+    }
 
     if (minYCoord + 24 < getHeight() && minYCoord > halfHeight + 20) {
       g.drawText(String(minValue[c], 1),
