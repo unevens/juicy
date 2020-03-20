@@ -205,7 +205,7 @@ private:
 
   aligned_ptr<Spline> splineDsp;
 
-  adsp::SplineDispatcher<adsp::Spline, Vec2d, JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>
+  adsp::SplineDispatcher<Vec2d, JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>
     splineDispatcher;
 
   LinkableParameter<WrappedBoolParameter>* symmetryParameter;

@@ -103,8 +103,8 @@ struct SplineParameters
   template<class Vec, int maxNumKnots>
   int updateSpline(adsp::AutoSpline<Vec, maxNumKnots>& spline)
   {
-    auto splineKnots = spline.spline.knots;
-    auto automationKnots = spline.automationKnots;
+    auto &splineKnots = spline.spline.settings.knots;
+    auto &automationKnots = spline.automator.knots;
     int n = 0;
     for (auto& knot : fixedKnots) {
       for (int c = 0; c < 2; ++c) {
@@ -139,7 +139,7 @@ struct SplineParameters
   template<class Vec, int maxNumKnots>
   int updateSpline(adsp::Spline<Vec, maxNumKnots>& spline)
   {
-    auto splineKnots = spline.knots;
+    auto &splineKnots = spline.settings.knots;
     int n = 0;
     for (auto& knot : fixedKnots) {
       for (int c = 0; c < 2; ++c) {
