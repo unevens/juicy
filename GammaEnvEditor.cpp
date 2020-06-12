@@ -24,17 +24,18 @@ GammaEnvEditor::GammaEnvEditor(AudioProcessorValueTreeState& apvts,
   , release(apvts, "Release", parameters.release)
   , releaseDelay(apvts, "Release Delay", parameters.releaseDelay)
   , attackDelay(apvts, "Attack Delay", parameters.attackDelay)
-  , metric(apvts, "Metric", { "Peak", "RMS" }, parameters.metric)
+  , rmsTime(apvts, "RMS Time", parameters.rmsTime)
   , channelLabels(apvts, midSideParamID)
 {
   addAndMakeVisible(attack);
   addAndMakeVisible(release);
   addAndMakeVisible(releaseDelay);
   addAndMakeVisible(attackDelay);
-  addAndMakeVisible(metric);
+  addAndMakeVisible(rmsTime);
   addAndMakeVisible(channelLabels);
   
   for (int c = 0; c < 2; ++c) {
+    rmsTime.getControl(c).setTextValueSuffix("ms");
     attack.getControl(c).setTextValueSuffix("ms");
     attackDelay.getControl(c).setTextValueSuffix("%");
     release.getControl(c).setTextValueSuffix("ms");
@@ -60,7 +61,7 @@ GammaEnvEditor::resized()
 
   resize(channelLabels, 50 * widthFactor);
 
-  resize(metric, 120 * widthFactor);
+  resize(rmsTime, 140 * widthFactor);
   resize(attack, 140 * widthFactor);
   resize(release, 140 * widthFactor);
   resize(attackDelay, 140 * widthFactor);
@@ -71,7 +72,7 @@ void
 GammaEnvEditor::setTableSettings(LinkableControlTable tableSettings)
 {
   channelLabels.tableSettings = tableSettings;
-  metric.tableSettings = tableSettings;
+  rmsTime.tableSettings = tableSettings;
   attack.tableSettings = tableSettings;
   release.tableSettings = tableSettings;
   attackDelay.tableSettings = tableSettings;

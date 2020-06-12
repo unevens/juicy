@@ -33,13 +33,13 @@ struct GammaEnvParameters
   LinkableParameter<AudioParameterFloat> release;
   LinkableParameter<AudioParameterFloat> attackDelay;
   LinkableParameter<AudioParameterFloat> releaseDelay;
-  LinkableParameter<AudioParameterChoice> metric;
+  LinkableParameter<AudioParameterFloat> rmsTime;
 };
 
 class GammaEnvEditor : public Component
 {
 public:
-  static constexpr int fullSizeWidth = 725;
+  static constexpr int fullSizeWidth = 745;
 
   GammaEnvEditor(AudioProcessorValueTreeState& apvts,
                  GammaEnvParameters& parameters,
@@ -52,7 +52,7 @@ public:
 private:
   ChannelLabels channelLabels;
 
-  LinkableComboBox metric;
+  LinkableControl<AttachedSlider> rmsTime;
   LinkableControl<AttachedSlider> attack;
   LinkableControl<AttachedSlider> release;
   LinkableControl<AttachedSlider> attackDelay;
