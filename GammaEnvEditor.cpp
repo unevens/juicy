@@ -59,13 +59,13 @@ GammaEnvEditor::resized()
     left += (int)width - 1;
   };
 
-  resize(channelLabels, 50 * widthFactor);
-
-  resize(rmsTime, 140 * widthFactor);
-  resize(attack, 140 * widthFactor);
-  resize(release, 140 * widthFactor);
-  resize(attackDelay, 140 * widthFactor);
-  resize(releaseDelay, 140 * widthFactor);
+  resize(channelLabels, 55 * widthFactor);
+  int elementWidth = 136 * widthFactor;
+  resize(rmsTime, elementWidth);
+  resize(attack, elementWidth);
+  resize(release, elementWidth );
+  resize(attackDelay, elementWidth);
+  resize(releaseDelay, elementWidth);
 }
 
 void
