@@ -30,8 +30,8 @@ SplineEditor::SplineEditor(
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
-  , symmetryParameter(symmetryParameter)
   , splineDsp(avec::Aligned<Spline>::make())
+  , symmetryParameter(symmetryParameter)
 {
   setSize(400, 400);
 
@@ -692,7 +692,6 @@ SplineKnotEditor::resized()
   int const rowHeight = getHeight() / 4;
 
   float const widthFactor = getWidth() / 598.f;
-  int const selectedWidth = (int)((2.f / 5.f) * (float)getWidth());
 
   label.setTopLeftPosition(0, 0);
   label.setSize((int)(130 * widthFactor), rowHeight);
