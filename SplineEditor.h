@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include "Attachments.h"
 #include "Linkables.h"
+#include "SplineEditorDsp.hpp"
 #include "SplineParameters.h"
-#include "adsp/Spline.hpp"
 #include <JuceHeader.h>
 
 /**
@@ -171,7 +171,8 @@ private:
 
   std::atomic<bool> redrawCurvesFlag{ true };
 
-  VecBuffer<Vec2d> vuMeterBuffer{ 1 };
+  std::array<double, 2> vuMeterIn{};
+  std::array<double, 2> vuMeterOut{};
 
   void onSplineChange();
 
@@ -201,17 +202,12 @@ private:
   float yToPixel(float y);
   float yToPixelUnclamped(float y);
 
-  using Spline = adsp::Spline<Vec2d, JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>;
-
-  aligned_ptr<Spline> splineDsp;
-
-  adsp::SplineDispatcher<Vec2d, JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS>
-    splineDispatcher;
+  juicy::GuiSpline splineDsp{ JUICY_MAX_SPLINE_EDITOR_NUM_KNOTS };
 
   LinkableParameter<WrappedBoolParameter>* symmetryParameter;
 
-  avec::VecBuffer<Vec2d> inputBuffer;
-  avec::VecBuffer<Vec2d> outputBuffer;
+  std::vector<double> xBuffer;
+  std::array<std::vector<double>, 2> yBuffer;
 
   void setupSplineInputBuffer();
 
