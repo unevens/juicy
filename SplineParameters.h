@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "Linkables.h"
+#include "SplineEditorDsp.hpp"
 #include "adsp/Spline.hpp"
 #include <JuceHeader.h>
 #include <array>
@@ -164,6 +165,36 @@ struct SplineParameters
       }
     }
 
+    return n;
+  }
+
+  // Non-template overload for the GUI's scalar evaluator.
+  int updateSpline(juicy::GuiSpline& spline)
+  {
+    int n = 0;
+    for (auto& fixed : fixedKnots) {
+      auto& k = spline.knot(n);
+      for (int c = 0; c < 2; ++c) {
+        k.x[c] = fixed.x;
+        k.y[c] = fixed.y;
+        k.t[c] = fixed.t;
+        k.s[c] = fixed.s;
+      }
+      ++n;
+    }
+    for (auto& knot : knots) {
+      if (knot.IsEnabled()) {
+        auto& k = spline.knot(n);
+        for (int c = 0; c < 2; ++c) {
+          auto& params = knot.getActiveParameters(c);
+          k.x[c] = params.x->get();
+          k.y[c] = params.y->get();
+          k.t[c] = params.t->get();
+          k.s[c] = params.s->get();
+        }
+        ++n;
+      }
+    }
     return n;
   }
 };

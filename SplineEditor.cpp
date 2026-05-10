@@ -30,7 +30,6 @@ SplineEditor::SplineEditor(
   , rangeX(parameters.rangeX)
   , rangeY(parameters.rangeY)
   , rangeTan(parameters.rangeTan)
-  , splineDsp(avec::Aligned<Spline>::make())
   , symmetryParameter(symmetryParameter)
 {
   setSize(400, 400);
@@ -123,18 +122,20 @@ SplineEditor::paint(Graphics& g)
     }
   }
 
-  int const numKnots = parameters.updateSpline(*splineDsp);
+  int const numKnots = parameters.updateSpline(splineDsp);
 
   // vumeter
 
   if (vuMeter[0] && vuMeter[1]) {
-    vuMeterBuffer[0][0] = vuMeter[0]->load();
-    vuMeterBuffer[0][1] = vuMeter[1]->load();
-    float const x0 = std::round(xToPixel((float)vuMeterBuffer[0][0]));
-    float const x1 = std::round(xToPixel((float)vuMeterBuffer[0][1]));
-    splineDsp->processBlock(vuMeterBuffer, vuMeterBuffer, numKnots);
-    float const y0 = std::round(yToPixel((float)vuMeterBuffer[0][0]));
-    float const y1 = std::round(yToPixel((float)vuMeterBuffer[0][1]));
+    vuMeterIn[0] = vuMeter[0]->load();
+    vuMeterIn[1] = vuMeter[1]->load();
+    float const x0 = std::round(xToPixel((float)vuMeterIn[0]));
+    float const x1 = std::round(xToPixel((float)vuMeterIn[1]));
+    for (int c = 0; c < 2; ++c) {
+      vuMeterOut[c] = splineDsp.process(vuMeterIn[c], c, numKnots);
+    }
+    float const y0 = std::round(yToPixel((float)vuMeterOut[0]));
+    float const y1 = std::round(yToPixel((float)vuMeterOut[1]));
     g.setColour(vuMeterColours[1]);
     g.drawLine(x1, y1, x1, (float)getHeight());
     g.drawLine(0.f, y1, x1, y1);
@@ -236,24 +237,28 @@ SplineEditor::paint(Graphics& g)
 
     if (symmetryParameter) {
       for (int c = 0; c < 2; ++c) {
-        splineDsp->setIsSymmetric(
+        splineDsp.setIsSymmetric(
           c, symmetryParameter->get(c)->getValue() >= 0.5f);
       }
     }
-    splineDispatcher.processBlock(
-      *splineDsp, inputBuffer, outputBuffer, numKnots);
+    int const w = (int)xBuffer.size();
+    for (int c = 0; c < 2; ++c) {
+      for (int i = 0; i < w; ++i) {
+        yBuffer[c][i] = splineDsp.process(xBuffer[i], c, numKnots);
+      }
+    }
   }
 
   for (int c = 1; c >= 0; --c) {
     Path path;
 
-    float prevY = yToPixel((float)outputBuffer[0][c]);
+    float prevY = yToPixel((float)yBuffer[c][0]);
 
     for (int i = 1; i < getWidth(); ++i) {
 
       float const y = jlimit(-10.f,
                              getHeight() + 10.f,
-                             yToPixelUnclamped((float)outputBuffer[i][c]));
+                             yToPixelUnclamped((float)yBuffer[c][i]));
 
       path.addLineSegment(Line<float>((float)(i - 1), prevY, (float)i, y),
                           lineThickness);
@@ -559,11 +564,13 @@ SplineEditor::yToPixelUnclamped(float y)
 void
 SplineEditor::setupSplineInputBuffer()
 {
-  inputBuffer.setNumSamples(getWidth());
-  outputBuffer.setNumSamples(getWidth());
+  int const w = getWidth();
+  xBuffer.resize((std::size_t)w);
+  yBuffer[0].resize((std::size_t)w);
+  yBuffer[1].resize((std::size_t)w);
 
-  for (int i = 0; i < getWidth(); ++i) {
-    inputBuffer[i] = pixelToX((float)i);
+  for (int i = 0; i < w; ++i) {
+    xBuffer[(std::size_t)i] = pixelToX((float)i);
   }
 
   redrawCurvesFlag = true;
