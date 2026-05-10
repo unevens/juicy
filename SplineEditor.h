@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Dario Mambro
+Copyright 2020-2026 Dario Mambro
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
