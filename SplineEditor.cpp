@@ -295,17 +295,35 @@ SplineEditor::resized()
 SplineEditor::KnotSelectionResult
 SplineEditor::selectKnot(MouseEvent const& event)
 {
-  float maxDistance = (float)getWidth() + (float)getHeight();
+  // Mirrors iplug_helpers::SplineEditorControl::FindKnotAt in the
+  // iPlug2-port branches of Curvessor and Overdraw so the two builds
+  // pick knots the same way:
+  //
+  //   - linked knots are recorded only as ch0 candidates (ch1 is a
+  //     mirror of ch0 in that case — having both compete in the pick
+  //     biases the result toward whichever of the two stacked
+  //     positions you happened to be closer to and confuses RMB);
+  //   - LMB picks the nearer of ch0 / ch1 (or whichever has the only
+  //     hit);
+  //   - RMB / Alt prefers ch1 ONLY if ch1 actually has a candidate
+  //     in this query — if you right-click on a knot with no ch1
+  //     side (because it's linked, or out of range), you still get
+  //     ch0 instead of a useless force-pick.
+  //
+  // The "in-range" radius filter is still applied downstream by
+  // mouseDown / mouseDoubleClick, same as before.
+  const float maxDistance = (float)getWidth() + (float)getHeight();
   float minDistances[2] = { maxDistance, maxDistance };
   int knots[2] = { -1, -1 };
-  Point<float> knotCoords[2];
 
-  for (int c = 0; c < 2; ++c) {
-    for (int n = 0; n < spline.knots.size(); ++n) {
-
-      knotCoords[c] = getKnotCoord(n, c);
-      float distance = knotCoords[c].getDistanceFrom(event.position);
-
+  for (int n = 0; n < spline.knots.size(); ++n) {
+    const bool isLinked = spline.knots[n].linked->getValue();
+    for (int c = 0; c < 2; ++c) {
+      if (isLinked && c > 0) {
+        break;
+      }
+      const auto coord = getKnotCoord(n, c);
+      const float distance = coord.getDistanceFrom(event.position);
       if (distance < minDistances[c]) {
         minDistances[c] = distance;
         knots[c] = n;
@@ -313,13 +331,22 @@ SplineEditor::selectKnot(MouseEvent const& event)
     }
   }
 
-  interactingChannel =
-    (event.mods.isAltDown() || event.mods.isRightButtonDown()) ? 1 : 0;
+  const bool preferCh1 =
+    event.mods.isAltDown() || event.mods.isRightButtonDown();
 
-  interactingChannel =
-    interactingChannel == 1 ? 1 : (minDistances[0] <= minDistances[1] ? 0 : 1);
+  int channel;
+  if (preferCh1 && knots[1] >= 0) {
+    channel = 1;
+  }
+  else if (knots[0] >= 0 && knots[1] >= 0) {
+    channel = (minDistances[0] <= minDistances[1]) ? 0 : 1;
+  }
+  else {
+    channel = (knots[0] >= 0) ? 0 : 1;
+  }
 
-  return { knots[interactingChannel], minDistances[interactingChannel] };
+  interactingChannel = channel;
+  return { knots[channel], minDistances[channel] };
 }
 
 void
@@ -479,11 +506,22 @@ SplineEditor::mouseDoubleClick(MouseEvent const& event)
     return;
   }
 
-  if (interactingChannel == 0) {
-    spline.knots[knot].enabled->invertValueFromGui();
+  // Decide the toggle target from the MODIFIER directly, not from
+  // interactingChannel. selectKnot now resolves linked knots to ch0
+  // (matching the iPlug2 port), so they no longer have a ch1 entry
+  // we could double-click on to flip "linked" — and we want RMB /
+  // Alt double-click to keep working as the unlink gesture
+  // regardless of which channel actually got selected. Mirrors the
+  // iPlug2-port mouseDoubleClick handler:
+  //   - LMB        → toggle "enabled" (add / remove the knot)
+  //   - RMB / Alt  → toggle "linked"  (split L/R or re-link)
+  const bool preferCh1 =
+    event.mods.isAltDown() || event.mods.isRightButtonDown();
+  if (preferCh1) {
+    spline.knots[knot].linked->invertValueFromGui();
   }
   else {
-    spline.knots[knot].linked->invertValueFromGui();
+    spline.knots[knot].enabled->invertValueFromGui();
   }
 
   selectedKnot = knot;
