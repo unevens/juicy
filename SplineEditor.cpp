@@ -296,22 +296,22 @@ SplineEditor::KnotSelectionResult
 SplineEditor::selectKnot(MouseEvent const& event)
 {
   // Mirrors iplug_helpers::SplineEditorControl::FindKnotAt in the
-  // iPlug2-port branches of Curvessor and Overdraw so the two builds
-  // pick knots the same way:
+  // iPlug2-port branches so the two builds pick knots the same way:
   //
-  //   - linked knots are recorded only as ch0 candidates (ch1 is a
-  //     mirror of ch0 in that case — having both compete in the pick
-  //     biases the result toward whichever of the two stacked
-  //     positions you happened to be closer to and confuses RMB);
-  //   - LMB picks the nearer of ch0 / ch1 (or whichever has the only
-  //     hit);
-  //   - RMB / Alt prefers ch1 ONLY if ch1 actually has a candidate
-  //     in this query — if you right-click on a knot with no ch1
-  //     side (because it's linked, or out of range), you still get
-  //     ch0 instead of a useless force-pick.
+  //   - LMB prefers ch0; falls back to ch1 if ch0 has no hit in range
+  //     (so the left button can still grab a side-only knot when the
+  //     mid side isn't reachable).
+  //   - RMB / Alt prefers ch1; falls back to ch0 if ch1 has no hit
+  //     (linked knots have no ch1 candidate by design, so RMB on
+  //     them lands sensibly on ch0).
+  //   - Linked knots only contribute a ch0 candidate — ch1 of a
+  //     linked knot is just a mirror of ch0, so making the two
+  //     compete biases the pick toward whichever stacked position
+  //     the mouse landed nearer to.
   //
   // The "in-range" radius filter is still applied downstream by
-  // mouseDown / mouseDoubleClick, same as before.
+  // mouseDown / mouseDoubleClick (against `widgetOffset` and
+  // `0.5 * widgetOffset` respectively), same as before.
   const float maxDistance = (float)getWidth() + (float)getHeight();
   float minDistances[2] = { maxDistance, maxDistance };
   int knots[2] = { -1, -1 };
@@ -331,19 +331,25 @@ SplineEditor::selectKnot(MouseEvent const& event)
     }
   }
 
+  // Apply an in-range cutoff per channel so the primary/fallback
+  // pick below honours hit distance, not just "is there any knot in
+  // this channel at all". widgetOffset matches the dblclick range
+  // gate; mouseDown applies a stricter half-widgetOffset filter on
+  // the returned minDistance afterwards, so a return distance in
+  // (0.5 * widgetOffset, widgetOffset] still lets the caller decide
+  // it's a miss (and start panning instead of grabbing).
+  for (int c = 0; c < 2; ++c) {
+    if (minDistances[c] > widgetOffset) {
+      knots[c] = -1;
+    }
+  }
+
   const bool preferCh1 =
     event.mods.isAltDown() || event.mods.isRightButtonDown();
 
-  int channel;
-  if (preferCh1 && knots[1] >= 0) {
-    channel = 1;
-  }
-  else if (knots[0] >= 0 && knots[1] >= 0) {
-    channel = (minDistances[0] <= minDistances[1]) ? 0 : 1;
-  }
-  else {
-    channel = (knots[0] >= 0) ? 0 : 1;
-  }
+  const int primary  = preferCh1 ? 1 : 0;
+  const int fallback = preferCh1 ? 0 : 1;
+  const int channel  = (knots[primary] >= 0) ? primary : fallback;
 
   interactingChannel = channel;
   return { knots[channel], minDistances[channel] };
@@ -506,18 +512,24 @@ SplineEditor::mouseDoubleClick(MouseEvent const& event)
     return;
   }
 
-  // Decide the toggle target from the MODIFIER directly, not from
-  // interactingChannel. selectKnot now resolves linked knots to ch0
-  // (matching the iPlug2 port), so they no longer have a ch1 entry
-  // we could double-click on to flip "linked" — and we want RMB /
-  // Alt double-click to keep working as the unlink gesture
-  // regardless of which channel actually got selected. Mirrors the
-  // iPlug2-port mouseDoubleClick handler:
-  //   - LMB        → toggle "enabled" (add / remove the knot)
-  //   - RMB / Alt  → toggle "linked"  (split L/R or re-link)
-  const bool preferCh1 =
-    event.mods.isAltDown() || event.mods.isRightButtonDown();
-  if (preferCh1) {
+  // Double-click defaults to toggling `enabled`. The per-button
+  // preference in selectKnot picks WHICH knot we land on; the toggle
+  // target is `enabled` unless the resolved channel is ch1 AND the
+  // knot is currently enabled — then we toggle `linked` instead:
+  //
+  //   - LMB-dblclick anywhere on a knot → toggle enabled
+  //   - RMB-dblclick on an enabled knot (resolves to ch1) → toggle linked
+  //   - RMB-dblclick on a disabled (ghost) knot → toggle enabled
+  //     (re-enable); toggling the link bit of a disabled knot has
+  //     no visible effect and would mask the "bring this ghost
+  //     back" gesture.
+  //
+  // Linked knots always resolve to ch0 in selectKnot, so a dblclick
+  // on an active linked knot can never reach the linked-toggle path
+  // here — to un-link, use the side panel's Link control or RMB-
+  // dblclick after first splitting via the side panel.
+  const bool enabled = spline.knots[knot].enabled->getValue();
+  if (enabled && interactingChannel == 1) {
     spline.knots[knot].linked->invertValueFromGui();
   }
   else {
